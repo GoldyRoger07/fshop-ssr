@@ -20,8 +20,12 @@
     "@angular/platform-server": "^22.0.0",
     "@angular/router": "^22.0.0",
     "@angular/ssr": "^22.0.1",
+    "@primeuix/themes": "^3.0.0",
     "express": "^5.1.0",
+    "primeicons": "^8.0.0",
+    "primeng": "^21.0.0",
     "rxjs": "~7.8.0",
+    "swiper": "^14.0.6",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

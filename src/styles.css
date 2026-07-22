@@ -1,3 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
 
+/* Ordre des layers CSS : les styles PrimeNG (layer « primeng ») passent avant
+   les utilitaires Tailwind afin que les classes Tailwind puissent surcharger
+   les composants PrimeNG. */
+@layer theme, base, primeng, utilities;
+
+@import "primeicons/primeicons.css";
+
+/* You can add global styles to this file, and also import other style files */
+
 @import 'tailwindcss';
+
+/* Le variant `dark:` de Tailwind suit la classe .app-dark posée sur <html>
+   (même sélecteur que le mode sombre PrimeNG). */
+@custom-variant dark (&:where(.app-dark, .app-dark *));
