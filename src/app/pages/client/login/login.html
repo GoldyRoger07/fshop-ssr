@@ -1,0 +1,55 @@
+<my-container>
+  <div class="mx-auto my-10 w-full max-w-sm">
+    <h1 class="mb-1 text-2xl font-bold">{{ isRegister() ? 'Créer un compte' : 'Se connecter' }}</h1>
+    <p class="mb-6 text-sm text-gray-500">
+      @if (isRegister()) {
+        Déjà inscrit ? <a routerLink="/connexion" class="font-medium underline">Se connecter</a>
+      } @else {
+        Nouveau sur Fshop ?
+        <a routerLink="/connexion" [queryParams]="{ mode: 'inscription' }" class="font-medium underline">Créer un compte</a>
+      }
+    </p>
+
+    <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (isRegister()) {
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex flex-col gap-1 text-sm">
+            Prénom
+            <input formControlName="firstName" autocomplete="given-name" class="border border-gray-300 bg-transparent px-3 py-2.5 text-base outline-none focus:border-black dark:border-gray-700 dark:focus:border-white" />
+          </label>
+          <label class="flex flex-col gap-1 text-sm">
+            Nom
+            <input formControlName="lastName" autocomplete="family-name" class="border border-gray-300 bg-transparent px-3 py-2.5 text-base outline-none focus:border-black dark:border-gray-700 dark:focus:border-white" />
+          </label>
+        </div>
+      }
+
+      <label class="flex flex-col gap-1 text-sm">
+        E-mail
+        <input type="email" formControlName="email" autocomplete="email" class="border border-gray-300 bg-transparent px-3 py-2.5 text-base outline-none focus:border-black dark:border-gray-700 dark:focus:border-white" />
+      </label>
+
+      <label class="flex flex-col gap-1 text-sm">
+        Mot de passe
+        <input
+          type="password"
+          formControlName="password"
+          [attr.autocomplete]="isRegister() ? 'new-password' : 'current-password'"
+          class="border border-gray-300 bg-transparent px-3 py-2.5 text-base outline-none focus:border-black dark:border-gray-700 dark:focus:border-white"
+        />
+      </label>
+
+      @if (error()) {
+        <p role="alert" class="text-sm text-sale">{{ error() }}</p>
+      }
+
+      <button
+        type="submit"
+        class="mt-2 bg-black py-3 text-sm font-semibold text-white uppercase transition-opacity hover:opacity-85 disabled:opacity-50 dark:bg-white dark:text-black"
+        [disabled]="submitting()"
+      >
+        {{ submitting() ? 'Patientez…' : isRegister() ? 'Créer mon compte' : 'Se connecter' }}
+      </button>
+    </form>
+  </div>
+</my-container>

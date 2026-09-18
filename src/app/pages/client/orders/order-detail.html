@@ -1,0 +1,119 @@
+<my-container>
+  <div class="py-8">
+    @if (loading()) {
+      <p class="py-20 text-center text-sm text-gray-500">Chargement de la commande…</p>
+    } @else if (order(); as order) {
+      @if (isNew()) {
+        <div class="mb-8 border border-green-600/40 bg-green-50 p-5 text-center dark:bg-green-950/30">
+          <i class="pi pi-check-circle mb-2 block text-green-600" style="font-size: 2rem"></i>
+          <h1 class="text-lg font-bold">Merci, votre commande est enregistrée !</h1>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            Un récapitulatif vous attend ci-dessous. Référence : <strong>{{ order.reference }}</strong>
+          </p>
+        </div>
+      } @else {
+        <nav class="mb-4 text-xs text-gray-500" aria-label="Fil d'Ariane">
+          <a routerLink="/commandes" class="hover:underline">Mes commandes</a>
+          <span class="mx-1.5" aria-hidden="true">/</span>
+          <span class="text-gray-900 dark:text-gray-200">{{ order.reference }}</span>
+        </nav>
+        <h1 class="mb-6 text-xl font-bold">Commande {{ order.reference }}</h1>
+      }
+
+      @if (error(); as message) {
+        <p class="mb-4 border border-sale/40 bg-sale-soft p-4 text-sm text-sale dark:bg-gray-900">{{ message }}</p>
+      }
+
+      <div class="grid gap-8 lg:grid-cols-[1fr_20rem]">
+        <section>
+          <div class="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 dark:text-gray-300">
+            <span>Passée le {{ order.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</span>
+            <span>Statut : <strong>{{ statusLabels[order.status] }}</strong></span>
+          </div>
+
+          <ul class="divide-y divide-gray-200 border-y border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+            @for (item of order.items; track $index) {
+              <li class="flex items-center gap-4 py-4">
+                <img
+                  [src]="item.image"
+                  [alt]="item.title"
+                  class="h-20 w-16 bg-gray-100 object-cover dark:bg-gray-800"
+                  loading="lazy"
+                />
+                <div class="min-w-0 flex-1">
+                  @if (item.productId) {
+                    <a [routerLink]="['/produit', item.productId]" class="line-clamp-2 text-sm hover:underline">
+                      {{ item.title }}
+                    </a>
+                  } @else {
+                    <p class="line-clamp-2 text-sm">{{ item.title }}</p>
+                  }
+                  <p class="mt-1 text-xs text-gray-500">{{ item.unitPrice | currency }} × {{ item.quantity }}</p>
+                </div>
+                <span class="font-semibold">{{ item.lineTotal | currency }}</span>
+              </li>
+            }
+          </ul>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a routerLink="/produits" class="shop-btn-outline">Continuer mes achats</a>
+
+            @if (canCancel()) {
+              @if (confirmingCancel()) {
+                <button type="button" class="shop-btn-outline text-sale" [disabled]="cancelling()" (click)="cancel()">
+                  {{ cancelling() ? 'Annulation…' : 'Confirmer l’annulation' }}
+                </button>
+                <button type="button" class="shop-btn-outline" (click)="confirmingCancel.set(false)">Revenir</button>
+              } @else {
+                <button type="button" class="shop-btn-outline" (click)="confirmingCancel.set(true)">
+                  Annuler la commande
+                </button>
+              }
+            }
+          </div>
+        </section>
+
+        <aside class="h-fit space-y-6">
+          <div class="border border-gray-200 p-5 dark:border-gray-800">
+            <h2 class="mb-4 font-semibold">Total</h2>
+            <dl class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <dt class="text-gray-500">Sous-total</dt>
+                <dd>{{ order.subtotal | currency }}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-gray-500">Livraison</dt>
+                <dd>{{ order.shippingCost ? (order.shippingCost | currency) : 'Offerte' }}</dd>
+              </div>
+              <div class="flex justify-between border-t border-gray-200 pt-2 font-bold dark:border-gray-800">
+                <dt>Total</dt>
+                <dd>{{ order.total | currency }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="border border-gray-200 p-5 dark:border-gray-800">
+            <h2 class="mb-3 font-semibold">Livraison</h2>
+            <address class="text-sm not-italic text-gray-600 dark:text-gray-300">
+              {{ order.shippingAddress.fullName }}<br />
+              {{ order.shippingAddress.line1 }}<br />
+              @if (order.shippingAddress.line2) {
+                {{ order.shippingAddress.line2 }}<br />
+              }
+              {{ order.shippingAddress.postalCode }} {{ order.shippingAddress.city }}<br />
+              {{ order.shippingAddress.country }}
+              @if (order.shippingAddress.phone) {
+                <br />{{ order.shippingAddress.phone }}
+              }
+            </address>
+          </div>
+        </aside>
+      </div>
+    } @else {
+      <div class="py-20 text-center">
+        <p class="mb-2 text-sm text-gray-500">{{ error() ?? 'Cette commande est introuvable.' }}</p>
+        <a routerLink="/commandes" class="text-sm font-semibold underline">Mes commandes</a>
+      </div>
+    }
+  </div>
+</my-container>

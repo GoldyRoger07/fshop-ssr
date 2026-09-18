@@ -12,17 +12,63 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+/** Adresse de fshop-api (sans le préfixe /api). */
+const apiUrl = (process.env['API_URL'] || 'http://localhost:8081').replace(/\/+$/, '');
+
+/** En-têtes propres à chaque connexion, à ne pas relayer. */
+const hopByHopHeaders = new Set([
+  'connection',
+  'keep-alive',
+  'transfer-encoding',
+  'upgrade',
+  'host',
+  'content-length',
+  'content-encoding',
+  'accept-encoding',
+]);
+
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
+ * Relaie /api/** vers fshop-api : le navigateur (et le rendu serveur) appellent
+ * la même origine que le site, sans configuration CORS.
  */
+app.use('/api', async (req, res, next) => {
+  try {
+    const headers = new Headers();
+    for (const [name, value] of Object.entries(req.headers)) {
+      if (value !== undefined && !hopByHopHeaders.has(name)) {
+        headers.set(name, Array.isArray(value) ? value.join(', ') : value);
+      }
+    }
+
+    const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
+    const response = await fetch(apiUrl + req.originalUrl, {
+      method: req.method,
+      headers,
+      body: hasBody ? (req as unknown as ReadableStream) : undefined,
+      duplex: hasBody ? 'half' : undefined,
+      redirect: 'manual',
+    } as RequestInit);
+
+    res.status(response.status);
+    response.headers.forEach((value, name) => {
+      if (!hopByHopHeaders.has(name)) {
+        res.setHeader(name, value);
+      }
+    });
+    res.send(Buffer.from(await response.arrayBuffer()));
+  } catch (error) {
+    console.error(`Proxy API : ${req.method} ${req.originalUrl} a échoué`, error);
+    if (res.headersSent) {
+      next(error);
+    } else {
+      res.status(502).type('application/problem+json').send({
+        title: 'Bad Gateway',
+        status: 502,
+        detail: 'API FShop injoignable',
+      });
+    }
+  }
+});
 
 /**
  * Serve static files from /browser

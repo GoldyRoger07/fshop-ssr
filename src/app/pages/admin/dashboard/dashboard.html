@@ -1,0 +1,78 @@
+<h1 class="mb-6 text-xl font-bold">Tableau de bord</h1>
+
+@if (error(); as message) {
+  <p class="admin-panel mb-6 border-sale/40 p-4 text-sm text-sale">{{ message }}</p>
+}
+
+@if (loading()) {
+  <p class="text-sm text-gray-500">Chargement…</p>
+} @else {
+  <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="admin-panel p-5">
+      <p class="text-xs tracking-wide text-gray-500 uppercase">Chiffre d'affaires</p>
+      <p class="mt-1 text-2xl font-bold">{{ revenue() | currency }}</p>
+      <p class="mt-1 text-xs text-gray-500">Commandes non annulées</p>
+    </div>
+    <div class="admin-panel p-5">
+      <p class="text-xs tracking-wide text-gray-500 uppercase">Commandes</p>
+      <p class="mt-1 text-2xl font-bold">{{ orderCount() | number }}</p>
+      <p class="mt-1 text-xs text-gray-500">{{ pendingCount() }} en attente de paiement</p>
+    </div>
+    <div class="admin-panel p-5">
+      <p class="text-xs tracking-wide text-gray-500 uppercase">Produits</p>
+      <p class="mt-1 text-2xl font-bold">{{ productCount() | number }}</p>
+      <a routerLink="/admin/produits" class="mt-1 inline-block text-xs text-gray-500 hover:underline">Gérer le catalogue</a>
+    </div>
+    <div class="admin-panel p-5">
+      <p class="text-xs tracking-wide text-gray-500 uppercase">Catégories</p>
+      <p class="mt-1 text-2xl font-bold">{{ categoryCount() | number }}</p>
+      <a routerLink="/admin/categories" class="mt-1 inline-block text-xs text-gray-500 hover:underline">Gérer les catégories</a>
+    </div>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
+    <section class="admin-panel overflow-hidden">
+      <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+        <h2 class="font-semibold">Dernières commandes</h2>
+        <a routerLink="/admin/commandes" class="text-sm hover:underline">Tout voir</a>
+      </div>
+
+      @if (recentOrders().length) {
+        <table class="w-full text-sm">
+          <thead class="border-b border-gray-200 dark:border-gray-800">
+            <tr>
+              <th class="admin-th">Référence</th>
+              <th class="admin-th">Date</th>
+              <th class="admin-th">Statut</th>
+              <th class="admin-th text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            @for (order of recentOrders(); track order.id) {
+              <tr>
+                <td class="admin-td font-mono text-xs">{{ order.reference }}</td>
+                <td class="admin-td text-gray-500">{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td class="admin-td"><app-order-status-badge [status]="order.status" /></td>
+                <td class="admin-td text-right font-semibold">{{ order.total | currency }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="p-4 text-sm text-gray-500">Aucune commande pour le moment.</p>
+      }
+    </section>
+
+    <section class="admin-panel p-5">
+      <h2 class="mb-4 font-semibold">Commandes par statut</h2>
+      <ul class="space-y-2 text-sm">
+        @for (entry of statusCounts(); track entry.status) {
+          <li class="flex items-center justify-between">
+            <app-order-status-badge [status]="entry.status" />
+            <span class="font-semibold">{{ entry.count }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
+}

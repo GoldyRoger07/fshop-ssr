@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { afterNextRender, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
@@ -8,5 +8,13 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('fshop-ssr');
+  constructor() {
+    // Swiper Element (web components <swiper-container>) : chargé uniquement dans
+    // le navigateur, une fois l'hydratation terminée. Ça évite que Swiper modifie
+    // le DOM rendu par le serveur avant qu'Angular ne le reprenne, et ça sort
+    // Swiper du bundle initial.
+    afterNextRender(() => {
+      import('swiper/element/bundle').then(({ register }) => register());
+    });
+  }
 }

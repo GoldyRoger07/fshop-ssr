@@ -1,10 +1,49 @@
-<app-header/>
-<div class="h-screen w-20">
+<my-container>
+  <div class="flex flex-col gap-10 pt-4 sm:gap-12">
+    <app-hero-banner />
 
-</div>
-<div class="h-screen w-20">
+    <!-- Avantages -->
+    <ul class="-mt-4 grid grid-cols-2 gap-px overflow-hidden border border-gray-200 bg-gray-200 sm:-mt-6 lg:grid-cols-4 dark:border-gray-800 dark:bg-gray-800">
+      @for (benefit of benefits; track benefit.title) {
+        <li class="flex items-center gap-3 bg-white px-4 py-3 dark:bg-gray-950">
+          <i class="pi text-gray-900 dark:text-gray-100" [class]="benefit.icon" style="font-size: 1.5rem"></i>
+          <div class="leading-tight">
+            <p class="text-sm font-semibold">{{ benefit.title }}</p>
+            <p class="text-xs text-gray-500">{{ benefit.text }}</p>
+          </div>
+        </li>
+      }
+    </ul>
 
-</div>
-<div class="h-screen w-20">
+    <section aria-label="Catégories">
+      <app-category-carousel />
+    </section>
 
-</div>
+    <!-- Bons de réduction -->
+    <section aria-label="Bons de réduction" class="grid gap-3 sm:grid-cols-3">
+      @for (coupon of coupons; track coupon.code) {
+        <div class="relative flex items-center justify-between gap-3 border border-dashed border-sale bg-sale-soft px-5 py-3 text-sale dark:bg-gray-900">
+          <div>
+            <p class="text-2xl leading-none font-extrabold">{{ coupon.amount }}</p>
+            <p class="mt-1 text-xs">{{ coupon.condition }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] tracking-wide uppercase">Code</p>
+            <p class="font-mono text-sm font-bold">{{ coupon.code }}</p>
+          </div>
+          <!-- Encoches du ticket -->
+          <span class="absolute top-1/2 -left-2 h-4 w-4 -translate-y-1/2 rounded-full border-r border-dashed border-sale bg-white dark:bg-gray-950"></span>
+          <span class="absolute top-1/2 -right-2 h-4 w-4 -translate-y-1/2 rounded-full border-l border-dashed border-sale bg-white dark:bg-gray-950"></span>
+        </div>
+      }
+    </section>
+
+    <section aria-label="Vente flash">
+      <app-flash-sale />
+    </section>
+
+    <section aria-label="Produits recommandés">
+      <app-product-feed />
+    </section>
+  </div>
+</my-container>

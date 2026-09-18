@@ -1,0 +1,114 @@
+<my-container>
+  <div class="py-6">
+    @if (loading()) {
+      <p class="py-20 text-center text-sm text-gray-500">Chargement du produit…</p>
+    } @else if (product(); as p) {
+      <nav class="mb-4 text-xs text-gray-500" aria-label="Fil d'Ariane">
+        <a routerLink="/" class="hover:underline">Accueil</a>
+        <span class="mx-1.5" aria-hidden="true">/</span>
+        <a [routerLink]="['/categorie', p.categorySlug]" class="hover:underline">{{ categoryName() }}</a>
+        <span class="mx-1.5" aria-hidden="true">/</span>
+        <span class="text-gray-900 dark:text-gray-200">{{ p.title }}</span>
+      </nav>
+
+      <div class="grid gap-8 md:grid-cols-2 lg:gap-12">
+        <!-- Visuel -->
+        <div class="relative aspect-3/4 overflow-hidden bg-gray-100 md:max-w-md dark:bg-gray-800">
+          <img [src]="p.image" [alt]="p.title" class="h-full w-full object-cover" />
+          @if (discount()) {
+            <span class="absolute top-3 left-0 bg-sale px-2 py-1 text-sm font-bold text-white">-{{ discount() }}%</span>
+          }
+        </div>
+
+        <!-- Informations -->
+        <div>
+          <h1 class="text-xl font-semibold">{{ p.title }}</h1>
+
+          <p class="mt-2 flex items-center gap-2 text-sm text-gray-500">
+            <i class="pi pi-star-fill text-amber-400" style="font-size: 0.75rem"></i>
+            {{ p.rating | number: '1.1-1' }}
+            <span>({{ p.reviewCount | number }} avis)</span>
+            <span aria-hidden="true">·</span>
+            <span>{{ p.soldCount | number }}+ vendus</span>
+          </p>
+
+          <div class="mt-4 flex flex-wrap items-baseline gap-3">
+            <span class="text-3xl font-bold" [class.text-sale]="discount()">{{ p.price | currency }}</span>
+            @if (discount()) {
+              <span class="text-base text-gray-400 line-through">{{ p.originalPrice | currency }}</span>
+              <span class="bg-sale-soft px-2 py-0.5 text-xs font-semibold text-sale">Économisez {{ discount() }} %</span>
+            }
+          </div>
+
+          <p class="mt-2 text-sm">
+            @if (outOfStock()) {
+              <span class="font-semibold text-sale">Rupture de stock</span>
+            } @else if (p.stock !== undefined && p.stock <= 10) {
+              <span class="font-semibold text-sale">Plus que {{ p.stock }} en stock</span>
+            } @else {
+              <span class="text-green-700 dark:text-green-500">En stock</span>
+            }
+          </p>
+
+          <div class="mt-6 flex flex-wrap items-center gap-3">
+            <app-quantity-input [value]="quantity()" [max]="maxQuantity()" (valueChange)="quantity.set($event)" />
+
+            <button type="button" class="shop-btn flex-1 sm:flex-none" [disabled]="outOfStock()" (click)="addToCart()">
+              <i class="pi pi-shopping-bag"></i>
+              Ajouter au panier
+            </button>
+
+            <button
+              type="button"
+              class="flex h-11 w-11 items-center justify-center border border-gray-300 transition-colors hover:border-black dark:border-gray-700 dark:hover:border-white"
+              [attr.aria-pressed]="inWishlist()"
+              [attr.aria-label]="inWishlist() ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+              (click)="toggleWishlist()"
+            >
+              <i class="pi" [class.pi-heart-fill]="inWishlist()" [class.text-sale]="inWishlist()" [class.pi-heart]="!inWishlist()"></i>
+            </button>
+          </div>
+
+          @if (added()) {
+            <p class="mt-4 flex flex-wrap items-center gap-3 border border-gray-200 p-3 text-sm dark:border-gray-800">
+              <i class="pi pi-check-circle text-green-600"></i>
+              Ajouté à votre panier.
+              <a routerLink="/panier" class="font-semibold underline">Voir le panier</a>
+            </p>
+          }
+
+          <ul class="mt-6 space-y-2 border-t border-gray-200 pt-6 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-400">
+            <li class="flex items-center gap-2">
+              <i class="pi pi-truck"></i> Livraison gratuite dès {{ freeShippingThreshold | currency }} d'achat
+            </li>
+            <li class="flex items-center gap-2"><i class="pi pi-replay"></i> Retours gratuits sous 30 jours</li>
+            <li class="flex items-center gap-2"><i class="pi pi-lock"></i> Paiement sécurisé</li>
+          </ul>
+
+          @if (p.description) {
+            <div class="mt-6 border-t border-gray-200 pt-6 dark:border-gray-800">
+              <h2 class="mb-2 font-semibold">Description</h2>
+              <p class="text-sm whitespace-pre-line text-gray-600 dark:text-gray-400">{{ p.description }}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (related().length) {
+        <section class="mt-16">
+          <h2 class="mb-4 text-lg font-bold">Vous aimerez aussi</h2>
+          <ul class="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            @for (item of related(); track item.id) {
+              <li><app-product-card [product]="item" /></li>
+            }
+          </ul>
+        </section>
+      }
+    } @else {
+      <div class="py-20 text-center">
+        <p class="mb-2 text-sm text-gray-500">{{ error() ?? 'Ce produit est introuvable.' }}</p>
+        <a routerLink="/produits" class="text-sm font-semibold underline">Retour au catalogue</a>
+      </div>
+    }
+  </div>
+</my-container>

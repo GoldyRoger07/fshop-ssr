@@ -1,0 +1,107 @@
+<div class="mb-6 flex flex-wrap items-center gap-3">
+  <h1 class="text-xl font-bold">Produits</h1>
+  <a routerLink="/admin/produits/nouveau" class="admin-btn ml-auto">
+    <i class="pi pi-plus"></i>
+    Nouveau produit
+  </a>
+</div>
+
+<div class="admin-panel mb-4 flex flex-wrap items-end gap-3 p-4">
+  <form class="flex-1 basis-64" (submit)="submitSearch($event)">
+    <label class="admin-label" for="search">Rechercher</label>
+    <div class="flex gap-2">
+      <input
+        id="search"
+        type="search"
+        class="admin-input"
+        placeholder="Titre ou description"
+        [value]="search()"
+        (input)="search.set($any($event.target).value)"
+      />
+      <button type="submit" class="admin-btn-ghost"><i class="pi pi-search"></i></button>
+    </div>
+  </form>
+
+  <div class="basis-56">
+    <label class="admin-label" for="category">Catégorie</label>
+    <select id="category" class="admin-input" [value]="category()" (change)="onCategoryChange($any($event.target).value)">
+      <option value="">Toutes</option>
+      @for (c of categories(); track c.slug) {
+        <option [value]="c.slug" [selected]="c.slug === category()">{{ c.name }}</option>
+      }
+    </select>
+  </div>
+</div>
+
+@if (error(); as message) {
+  <p class="admin-panel mb-4 border-sale/40 p-4 text-sm text-sale">{{ message }}</p>
+}
+
+<div class="admin-panel overflow-x-auto">
+  <table class="w-full min-w-3xl text-sm">
+    <thead class="border-b border-gray-200 dark:border-gray-800">
+      <tr>
+        <th class="admin-th">Produit</th>
+        <th class="admin-th">Catégorie</th>
+        <th class="admin-th text-right">Prix</th>
+        <th class="admin-th text-right">Stock</th>
+        <th class="admin-th">Étiquette</th>
+        <th class="admin-th text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+      @for (product of result()?.content ?? []; track product.id) {
+        <tr>
+          <td class="admin-td">
+            <div class="flex items-center gap-3">
+              <img [src]="product.image" [alt]="product.title" class="h-12 w-10 rounded object-cover" loading="lazy" />
+              <div class="min-w-0">
+                <p class="line-clamp-1 font-medium">{{ product.title }}</p>
+                <p class="text-xs text-gray-500">#{{ product.id }}</p>
+              </div>
+            </div>
+          </td>
+          <td class="admin-td text-gray-500">{{ product.categorySlug }}</td>
+          <td class="admin-td text-right">
+            <span class="font-semibold">{{ product.price | currency }}</span>
+            @if (product.originalPrice) {
+              <span class="ml-1 text-xs text-gray-400 line-through">{{ product.originalPrice | currency }}</span>
+            }
+          </td>
+          <td class="admin-td text-right" [class.text-sale]="(product.stock ?? 0) === 0">{{ product.stock ?? '—' }}</td>
+          <td class="admin-td text-gray-500">{{ product.tag ?? '—' }}</td>
+          <td class="admin-td">
+            <div class="flex justify-end gap-2">
+              @if (confirmingDelete() === product.id) {
+                <button type="button" class="admin-btn-ghost text-sale" (click)="remove(product)">Confirmer</button>
+                <button type="button" class="admin-btn-ghost" (click)="confirmingDelete.set(null)">Annuler</button>
+              } @else {
+                <a [routerLink]="['/admin/produits', product.id]" class="admin-btn-ghost" aria-label="Modifier">
+                  <i class="pi pi-pencil"></i>
+                </a>
+                <button
+                  type="button"
+                  class="admin-btn-ghost"
+                  aria-label="Supprimer"
+                  (click)="confirmingDelete.set(product.id)"
+                >
+                  <i class="pi pi-trash"></i>
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td class="admin-td text-gray-500" colspan="6">
+            {{ loading() ? 'Chargement…' : 'Aucun produit ne correspond à cette recherche.' }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="mt-4">
+  <app-pagination [page]="result()" (pageChange)="load($event)" />
+</div>

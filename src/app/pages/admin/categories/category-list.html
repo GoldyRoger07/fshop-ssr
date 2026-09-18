@@ -1,0 +1,89 @@
+<h1 class="mb-6 text-xl font-bold">Catégories</h1>
+
+@if (error(); as message) {
+  <p class="admin-panel mb-4 border-sale/40 p-4 text-sm text-sale">{{ message }}</p>
+}
+
+<div class="grid gap-6 lg:grid-cols-[1fr_20rem]">
+  <div class="admin-panel overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="border-b border-gray-200 dark:border-gray-800">
+        <tr>
+          <th class="admin-th">Catégorie</th>
+          <th class="admin-th">Slug</th>
+          <th class="admin-th text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        @for (category of categories(); track category.slug) {
+          <tr>
+            <td class="admin-td">
+              <div class="flex items-center gap-3">
+                <img [src]="category.image" [alt]="category.name" class="h-10 w-10 rounded-full object-cover" loading="lazy" />
+                <span class="font-medium">{{ category.name }}</span>
+              </div>
+            </td>
+            <td class="admin-td font-mono text-xs text-gray-500">{{ category.slug }}</td>
+            <td class="admin-td">
+              <div class="flex justify-end gap-2">
+                @if (confirmingDelete() === category.id) {
+                  <button type="button" class="admin-btn-ghost text-sale" (click)="remove(category)">Confirmer</button>
+                  <button type="button" class="admin-btn-ghost" (click)="confirmingDelete.set(null)">Annuler</button>
+                } @else {
+                  <button type="button" class="admin-btn-ghost" aria-label="Modifier" (click)="edit(category)">
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-btn-ghost"
+                    aria-label="Supprimer"
+                    (click)="confirmingDelete.set(category.id ?? null)"
+                  >
+                    <i class="pi pi-trash"></i>
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="admin-td text-gray-500" colspan="3">
+              {{ loading() ? 'Chargement…' : 'Aucune catégorie.' }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <form class="admin-panel h-fit p-5" [formGroup]="form" (ngSubmit)="submit()">
+    <h2 class="mb-4 font-semibold">
+      {{ editing() ? 'Modifier « ' + editing()!.name + ' »' : 'Nouvelle catégorie' }}
+    </h2>
+
+    <div class="mb-3">
+      <label class="admin-label" for="name">Nom *</label>
+      <input id="name" class="admin-input" formControlName="name" maxlength="150" />
+    </div>
+
+    <div class="mb-3">
+      <label class="admin-label" for="slug">Slug *</label>
+      <input id="slug" class="admin-input" formControlName="slug" placeholder="robes-longues" maxlength="100" />
+      <p class="mt-1 text-xs text-gray-500">Minuscules, chiffres et tirets.</p>
+    </div>
+
+    <div class="mb-4">
+      <label class="admin-label" for="image">Image</label>
+      <input id="image" class="admin-input" formControlName="image" placeholder="/img/categories/robes.avif" />
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="admin-btn" [disabled]="submitting()">
+        {{ submitting() ? 'Enregistrement…' : editing() ? 'Mettre à jour' : 'Ajouter' }}
+      </button>
+      @if (editing()) {
+        <button type="button" class="admin-btn-ghost" (click)="cancelEdit()">Annuler</button>
+      }
+    </div>
+  </form>
+</div>

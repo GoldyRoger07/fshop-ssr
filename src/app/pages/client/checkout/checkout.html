@@ -1,0 +1,107 @@
+<my-container>
+  <div class="py-8">
+    <h1 class="mb-6 text-xl font-bold">Commander</h1>
+
+    @if (error(); as message) {
+      <p class="mb-4 border border-sale/40 bg-sale-soft p-4 text-sm text-sale dark:bg-gray-900">{{ message }}</p>
+    }
+
+    @if (items().length) {
+      <div class="grid gap-8 lg:grid-cols-[1fr_20rem]">
+        <form class="border border-gray-200 p-5 dark:border-gray-800" [formGroup]="form" (ngSubmit)="submit()">
+          <h2 class="mb-4 font-semibold">Adresse de livraison</h2>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <label class="shop-label" for="fullName">Nom complet *</label>
+              <input id="fullName" class="shop-input" formControlName="fullName" autocomplete="name" />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="shop-label" for="line1">Adresse *</label>
+              <input id="line1" class="shop-input" formControlName="line1" autocomplete="address-line1" />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="shop-label" for="line2">Complément d'adresse</label>
+              <input id="line2" class="shop-input" formControlName="line2" autocomplete="address-line2" />
+            </div>
+
+            <div>
+              <label class="shop-label" for="postalCode">Code postal *</label>
+              <input id="postalCode" class="shop-input" formControlName="postalCode" autocomplete="postal-code" />
+            </div>
+
+            <div>
+              <label class="shop-label" for="city">Ville *</label>
+              <input id="city" class="shop-input" formControlName="city" autocomplete="address-level2" />
+            </div>
+
+            <div>
+              <label class="shop-label" for="country">Pays *</label>
+              <input id="country" class="shop-input" formControlName="country" autocomplete="country-name" />
+            </div>
+
+            <div>
+              <label class="shop-label" for="phone">Téléphone</label>
+              <input id="phone" type="tel" class="shop-input" formControlName="phone" autocomplete="tel" />
+            </div>
+          </div>
+
+          <p class="mt-6 border-t border-gray-200 pt-4 text-xs text-gray-500 dark:border-gray-800">
+            <i class="pi pi-info-circle"></i>
+            Aucun paiement n'est encaissé pour l'instant : la commande est enregistrée avec le statut
+            « En attente ».
+          </p>
+
+          <button type="submit" class="shop-btn mt-4 w-full sm:w-auto" [disabled]="submitting()">
+            {{ submitting() ? 'Validation…' : 'Valider ma commande' }}
+          </button>
+        </form>
+
+        <!-- Récapitulatif -->
+        <aside class="h-fit border border-gray-200 p-5 dark:border-gray-800">
+          <h2 class="mb-4 font-semibold">Votre commande</h2>
+
+          <ul class="mb-4 space-y-3">
+            @for (line of items(); track line.product.id) {
+              <li class="flex items-center gap-3 text-sm">
+                <img
+                  [src]="line.product.image"
+                  [alt]="line.product.title"
+                  class="h-14 w-11 bg-gray-100 object-cover dark:bg-gray-800"
+                  loading="lazy"
+                />
+                <span class="min-w-0 flex-1">
+                  <span class="line-clamp-2">{{ line.product.title }}</span>
+                  <span class="text-xs text-gray-500">× {{ line.quantity }}</span>
+                </span>
+                <span class="font-semibold">{{ line.product.price * line.quantity | currency }}</span>
+              </li>
+            }
+          </ul>
+
+          <dl class="space-y-2 border-t border-gray-200 pt-4 text-sm dark:border-gray-800">
+            <div class="flex justify-between">
+              <dt class="text-gray-500">Sous-total</dt>
+              <dd>{{ subtotal() | currency }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-gray-500">Livraison</dt>
+              <dd>{{ shippingCost() ? (shippingCost() | currency) : 'Offerte' }}</dd>
+            </div>
+            <div class="flex justify-between border-t border-gray-200 pt-2 font-bold dark:border-gray-800">
+              <dt>Total</dt>
+              <dd>{{ total() | currency }}</dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
+    } @else {
+      <div class="py-20 text-center">
+        <p class="mb-4 text-sm text-gray-500">Votre panier est vide : il n'y a rien à commander.</p>
+        <a routerLink="/produits" class="shop-btn">Découvrir les produits</a>
+      </div>
+    }
+  </div>
+</my-container>

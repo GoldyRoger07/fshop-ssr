@@ -1,0 +1,22 @@
+.hero-slider swiper-container {
+  display: block;
+  width: 100%;
+  height: 100%;
+  --swiper-pagination-color: #fff;
+  --swiper-pagination-bullet-inactive-color: #fff;
+  --swiper-pagination-bullet-inactive-opacity: 0.5;
+}
+
+.hero-slider swiper-slide {
+  width: 100%;
+  height: 100%;
+  background: #eee;
+}
+
+.hero-slider swiper-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: bottom;
+}

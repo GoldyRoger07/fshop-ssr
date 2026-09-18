@@ -1,0 +1,74 @@
+<div class="mb-6 flex items-center gap-3">
+  <a routerLink="/admin/produits" class="admin-btn-ghost" aria-label="Retour à la liste"><i class="pi pi-arrow-left"></i></a>
+  <h1 class="text-xl font-bold">{{ isEdit() ? 'Modifier le produit' : 'Nouveau produit' }}</h1>
+</div>
+
+@if (error(); as message) {
+  <p class="admin-panel mb-4 border-sale/40 p-4 text-sm text-sale">{{ message }}</p>
+}
+
+@if (loading()) {
+  <p class="text-sm text-gray-500">Chargement…</p>
+} @else {
+  <form class="admin-panel max-w-3xl p-5" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <label class="admin-label" for="title">Titre *</label>
+        <input id="title" class="admin-input" formControlName="title" maxlength="255" />
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="admin-label" for="description">Description</label>
+        <textarea id="description" class="admin-input h-24 py-2" formControlName="description" maxlength="2000"></textarea>
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="admin-label" for="image">Image (chemin public)</label>
+        <input id="image" class="admin-input" formControlName="image" placeholder="/img/categories/robes.avif" />
+      </div>
+
+      <div>
+        <label class="admin-label" for="categorySlug">Catégorie *</label>
+        <select id="categorySlug" class="admin-input" formControlName="categorySlug">
+          <option value="">Choisir…</option>
+          @for (c of categories(); track c.slug) {
+            <option [value]="c.slug">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="admin-label" for="tag">Étiquette</label>
+        <select id="tag" class="admin-input" formControlName="tag">
+          <option value="">Aucune</option>
+          @for (tag of tags; track tag) {
+            <option [value]="tag">{{ tag }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="admin-label" for="price">Prix (€) *</label>
+        <input id="price" type="number" min="0" step="0.01" class="admin-input" formControlName="price" />
+      </div>
+
+      <div>
+        <label class="admin-label" for="originalPrice">Prix barré (€)</label>
+        <input id="originalPrice" type="number" min="0" step="0.01" class="admin-input" formControlName="originalPrice" />
+        <p class="mt-1 text-xs text-gray-500">0 = pas de promotion</p>
+      </div>
+
+      <div>
+        <label class="admin-label" for="stock">Stock *</label>
+        <input id="stock" type="number" min="0" step="1" class="admin-input" formControlName="stock" />
+      </div>
+    </div>
+
+    <div class="mt-6 flex gap-3">
+      <button type="submit" class="admin-btn" [disabled]="submitting()">
+        {{ submitting() ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+      <a routerLink="/admin/produits" class="admin-btn-ghost">Annuler</a>
+    </div>
+  </form>
+}

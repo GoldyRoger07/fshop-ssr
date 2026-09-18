@@ -1,0 +1,67 @@
+@let p = product();
+
+<article class="group flex h-full flex-col">
+  <div class="relative aspect-3/4 overflow-hidden bg-gray-100 dark:bg-gray-800">
+    <a [routerLink]="['/produit', p.id]" [attr.aria-label]="p.title">
+      <img
+        [src]="p.image"
+        [alt]="p.title"
+        loading="lazy"
+        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+    </a>
+
+    @if (discount()) {
+      <span class="absolute top-2 left-0 bg-sale px-1.5 py-0.5 text-xs font-semibold text-white">
+        -{{ discount() }}%
+      </span>
+    }
+
+    @if (p.tag) {
+      <span class="absolute bottom-2 left-2 bg-black/80 px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-white uppercase">
+        {{ tagLabels[p.tag] }}
+      </span>
+    }
+
+    <button
+      type="button"
+      class="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-sm transition hover:scale-110"
+      [attr.aria-pressed]="inWishlist()"
+      [attr.aria-label]="inWishlist() ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+      (click)="toggleWishlist()"
+    >
+      <i class="pi" [class.pi-heart-fill]="inWishlist()" [class.text-sale]="inWishlist()" [class.pi-heart]="!inWishlist()"></i>
+    </button>
+  </div>
+
+  <div class="flex flex-1 flex-col pt-2">
+    <h3 class="line-clamp-1 text-xs text-gray-600 dark:text-gray-300">
+      <a [routerLink]="['/produit', p.id]" class="hover:underline">{{ p.title }}</a>
+    </h3>
+
+    <div class="mt-1 flex items-center justify-between gap-2">
+      <p class="flex min-w-0 flex-wrap items-baseline gap-x-1.5">
+        <span class="text-base font-bold" [class.text-sale]="discount()">{{ p.price | currency }}</span>
+        @if (discount()) {
+          <span class="text-xs text-gray-400 line-through">{{ p.originalPrice | currency }}</span>
+        }
+      </p>
+
+      <button
+        type="button"
+        class="flex h-7 w-10 shrink-0 items-center justify-center rounded-full border border-gray-900 transition-colors hover:bg-black hover:text-white dark:border-gray-300 dark:hover:bg-white dark:hover:text-black"
+        [attr.aria-label]="'Ajouter « ' + p.title + ' » au panier'"
+        (click)="addToCart()"
+      >
+        <i class="pi pi-cart-plus" style="font-size: 0.875rem"></i>
+      </button>
+    </div>
+
+    <p class="mt-1 flex items-center gap-1 text-[11px] text-gray-500">
+      <i class="pi pi-star-fill text-amber-400" style="font-size: 0.625rem"></i>
+      {{ p.rating | number: '1.1-1' }} ({{ p.reviewCount }})
+      <span aria-hidden="true">·</span>
+      {{ p.soldCount | number }}+ vendus
+    </p>
+  </div>
+</article>

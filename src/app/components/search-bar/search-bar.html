@@ -1,8 +1,22 @@
-<div class="bg-gray-100 flex items-center gap-2 p-2 w-full rounded-md ">
-    <input type="text" class="w-full">
-    <button class="bg-transparent px-3">
-
-        <i class="pi pi-search"></i>
- 
-    </button>
-</div>
+<form
+  role="search"
+  class="flex h-10 w-full items-stretch border border-black dark:border-gray-600"
+  (submit)="submit($event)"
+>
+  <input
+    type="search"
+    name="q"
+    aria-label="Rechercher un produit"
+    class="min-w-0 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-gray-400"
+    [placeholder]="placeholder()"
+    [value]="query()"
+    (input)="query.set($any($event.target).value)"
+  />
+  <button
+    type="submit"
+    class="flex w-14 items-center justify-center bg-black text-white transition-colors hover:bg-gray-800"
+    aria-label="Rechercher"
+  >
+    <i class="pi pi-search"></i>
+  </button>
+</form>

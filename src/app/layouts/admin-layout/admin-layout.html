@@ -1,0 +1,89 @@
+<div class="flex min-h-screen bg-gray-50 dark:bg-gray-950">
+  <!-- Barre latérale -->
+  <aside
+    class="fixed inset-y-0 left-0 z-50 flex w-60 flex-col bg-gray-900 text-gray-300 transition-transform md:static md:translate-x-0"
+    [class.-translate-x-full]="!menuOpen()"
+  >
+    <div class="flex items-center justify-between px-5 py-5">
+      <a routerLink="/admin" class="flex items-center gap-2" (click)="closeMenu()">
+        <img src="/img/fshop-logo.svg" class="w-20 invert" alt="Fshop" />
+        <span class="text-xs font-semibold tracking-widest text-gray-400 uppercase">Admin</span>
+      </a>
+      <button type="button" class="text-gray-400 md:hidden" aria-label="Fermer le menu" (click)="closeMenu()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <nav class="flex-1 px-3" aria-label="Administration">
+      <ul class="space-y-1">
+        @for (link of links; track link.path) {
+          <li>
+            <a
+              [routerLink]="link.path"
+              routerLinkActive="bg-white/10 text-white"
+              [routerLinkActiveOptions]="{ exact: link.path === '/admin' }"
+              class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+              (click)="closeMenu()"
+            >
+              <i class="pi" [class]="link.icon"></i>
+              {{ link.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <div class="border-t border-white/10 px-3 py-4">
+      <a
+        routerLink="/"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+        (click)="closeMenu()"
+      >
+        <i class="pi pi-external-link"></i>
+        Voir la boutique
+      </a>
+    </div>
+  </aside>
+
+  <!-- Voile (mobile) -->
+  @if (menuOpen()) {
+    <div class="fixed inset-0 z-40 bg-black/40 md:hidden" aria-hidden="true" (click)="closeMenu()"></div>
+  }
+
+  <div class="flex min-w-0 flex-1 flex-col">
+    <!-- Barre du haut -->
+    <header class="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 md:px-6 dark:border-gray-800 dark:bg-gray-900">
+      <button type="button" class="md:hidden" aria-label="Ouvrir le menu" (click)="toggleMenu()">
+        <i class="pi pi-bars" style="font-size: 1.25rem"></i>
+      </button>
+
+      <p class="ml-auto hidden text-sm text-gray-600 sm:block dark:text-gray-300">
+        @if (user(); as u) {
+          {{ u.firstName }} {{ u.lastName }} · <span class="text-gray-400">{{ u.email }}</span>
+        }
+      </p>
+
+      <button
+        type="button"
+        class="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+        [attr.aria-label]="theme() === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre'"
+        (click)="toggleTheme()"
+      >
+        <i class="pi" [class.pi-sun]="theme() === 'dark'" [class.pi-moon]="theme() !== 'dark'"></i>
+      </button>
+
+      <button
+        type="button"
+        class="flex h-9 items-center gap-2 rounded-lg px-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+        (click)="logout()"
+      >
+        <i class="pi pi-sign-out"></i>
+        <span class="hidden sm:inline">Déconnexion</span>
+      </button>
+    </header>
+
+    <main class="min-w-0 flex-1 p-4 md:p-6">
+      <router-outlet />
+    </main>
+  </div>
+</div>

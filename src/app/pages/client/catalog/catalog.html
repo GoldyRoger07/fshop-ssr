@@ -1,0 +1,49 @@
+<my-container>
+  <div class="py-6">
+    <nav class="mb-4 text-xs text-gray-500" aria-label="Fil d'Ariane">
+      <a routerLink="/" class="hover:underline">Accueil</a>
+      <span class="mx-1.5" aria-hidden="true">/</span>
+      <span class="text-gray-900 dark:text-gray-200">{{ title() }}</span>
+    </nav>
+
+    <div class="mb-6 flex flex-wrap items-center gap-4">
+      <h1 class="text-xl font-bold">{{ title() }}</h1>
+
+      @if (!isPromos()) {
+        <label class="ml-auto flex items-center gap-2 text-sm">
+          <span class="text-gray-500">Trier par</span>
+          <select class="shop-input w-48" [value]="sort()" (change)="changeSort($any($event.target).value)">
+            @for (option of sortOptions; track option.value) {
+              <option [value]="option.value" [selected]="option.value === sort()">{{ option.label }}</option>
+            }
+          </select>
+        </label>
+      }
+    </div>
+
+    @if (error(); as message) {
+      <p class="border border-sale/40 bg-sale-soft p-4 text-sm text-sale dark:bg-gray-900">{{ message }}</p>
+    }
+
+    @if (loading()) {
+      <p class="py-16 text-center text-sm text-gray-500">Chargement des produits…</p>
+    } @else if (products().length) {
+      <ul class="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        @for (product of products(); track product.id) {
+          <li><app-product-card [product]="product" /></li>
+        }
+      </ul>
+
+      @if (!isPromos()) {
+        <div class="mt-10">
+          <app-pagination [page]="result()" (pageChange)="goToPage($event)" />
+        </div>
+      }
+    } @else {
+      <div class="py-16 text-center">
+        <p class="mb-2 text-sm text-gray-500">Aucun produit ne correspond à votre recherche.</p>
+        <a routerLink="/produits" class="text-sm font-semibold underline">Voir tout le catalogue</a>
+      </div>
+    }
+  </div>
+</my-container>

@@ -1,141 +1,134 @@
 <header
-  class="fixed top-0 z-50 w-full border-b border-gray-200 bg-white/10 backdrop-blur transition-transform duration-300 will-change-transform dark:border-gray-800 dark:bg-gray-900/80"
-  [class.-translate-y-full]="hidden()">
-  <nav class="mx-auto  max-w-6xl flex flex-col  gap-4 py-3 px-4 sm:px-6 lg:px-8">
-    <!-- Logo -->
-     <div class="flex items-center justify-between">
-       <a href="#" class="flex items-center gap-2 shrink-0" aria-label="Accueil">
-         <img src="/img/fshop-logo.svg" class="w-30" alt="Logo de Fshop">
-         <!-- <span
-           class="flex h-9 w-9 items-center justify-center rounded-lg bg-(--p-primary-color) font-bold text-white"
-         >
-           R
-         </span>
-         <span class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">Raf</span> -->
-       </a>
+  class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white transition-transform duration-300 will-change-transform dark:border-gray-800 dark:bg-gray-950"
+  [class.-translate-y-full]="hidden()"
+>
+  <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 pt-3 xl:px-0">
+    <!-- Ligne principale -->
+    <div class="flex items-center gap-4 md:gap-8">
+      <!-- Menu (mobile) -->
+      <button
+        type="button"
+        class="-ml-2 inline-flex h-10 w-10 items-center justify-center md:hidden"
+        [attr.aria-expanded]="menuOpen()"
+        aria-controls="mobile-menu"
+        [attr.aria-label]="menuOpen() ? 'Fermer le menu' : 'Ouvrir le menu'"
+        (click)="toggleMenu()"
+      >
+        <i class="pi" [class.pi-times]="menuOpen()" [class.pi-bars]="!menuOpen()" style="font-size: 1.25rem"></i>
+      </button>
 
-       <div class="w-[50%]">
-          <search-bar/>
-       </div>
+      <a routerLink="/" class="shrink-0" aria-label="Fshop, retour à l'accueil">
+        <img src="/img/fshop-logo.svg" class="w-24 dark:invert md:w-28" alt="Fshop" />
+      </a>
 
-        <!-- Actions (desktop) -->
-        <div class="hidden items-center gap-3 md:flex">
-          <!-- Bascule de thème -->
-           <i class="pi pi-user"></i>
-           <i class="pi pi-shopping-cart"></i>
-           <i class="pi pi-heart"></i>
-           <i class="pi pi-globe"></i>
+      <!-- Recherche (desktop) -->
+      <div class="hidden flex-1 md:block">
+        <search-bar (search)="search($event)" />
+      </div>
 
-          <button
-            type="button"
-            class="inline-flex  items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-            [attr.aria-label]="theme() === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre'"
-            (click)="toggleTheme()"
-          >
-            @if (theme() === 'dark') {
-              <!-- Icône soleil -->
-               <i class="pi pi-sun"></i>
-              <!-- <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="4" />
-                <path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41" />
-              </svg> -->
-            } @else {
-              <!-- Icône lune -->
-               <i class="pi pi-moon"></i>
-              <!-- <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
-              </svg> -->
-            }
+      <!-- Actions -->
+      <div class="ml-auto flex items-center gap-1 md:ml-0 md:gap-2">
+        @if (isAdmin()) {
+          <a routerLink="/admin" class="header-action hidden md:flex" aria-label="Administration" title="Administration">
+            <i class="pi pi-cog"></i>
+          </a>
+        }
+
+        @if (user(); as u) {
+          <span class="hidden text-sm lg:inline">Bonjour {{ u.firstName }}</span>
+          <a routerLink="/commandes" class="header-action hidden md:flex" aria-label="Mes commandes" title="Mes commandes">
+            <i class="pi pi-user"></i>
+          </a>
+          <button type="button" class="header-action hidden md:flex" aria-label="Se déconnecter" title="Se déconnecter" (click)="logout()">
+            <i class="pi pi-sign-out"></i>
           </button>
+        } @else {
+          <a routerLink="/connexion" class="header-action hidden md:flex" aria-label="Mon compte">
+            <i class="pi pi-user"></i>
+          </a>
+        }
 
-          
-        </div>
+        <a href="#" class="header-action relative hidden sm:flex" aria-label="Mes favoris">
+          <i class="pi pi-heart"></i>
+          @if (wishlistCount()) {
+            <span class="header-badge">{{ wishlistCount() }}</span>
+          }
+        </a>
+
+        <a routerLink="/panier" class="header-action relative flex" aria-label="Mon panier">
+          <i class="pi pi-shopping-bag"></i>
+          @if (cartCount()) {
+            <span class="header-badge">{{ cartCount() }}</span>
+          }
+        </a>
+
+        <button
+          type="button"
+          class="header-action flex"
+          [attr.aria-label]="theme() === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre'"
+          (click)="toggleTheme()"
+        >
+          <i class="pi" [class.pi-sun]="theme() === 'dark'" [class.pi-moon]="theme() !== 'dark'"></i>
+        </button>
+      </div>
     </div>
-   
 
-    <div>
+    <!-- Recherche (mobile) -->
+    <div class="md:hidden">
+      <search-bar (search)="search($event)" />
+    </div>
 
-      <!-- Menu (desktop) -->
-      <ul class="hidden items-center gap-8 md:flex">
+    <!-- Catégories : défilement horizontal, comme sur Shein -->
+    <nav aria-label="Catégories">
+      <ul class="no-scrollbar -mx-4 flex gap-6 overflow-x-auto px-4 xl:mx-0 xl:px-0">
         @for (item of navItems; track item.label) {
-          <li>
+          <li class="shrink-0">
             <a
-              [href]="item.link"
-              class="text-sm font-medium text-gray-600 transition-colors hover:text-orange-500 dark:text-gray-300 dark:hover:text-orange-500"
+              [routerLink]="item.link"
+              [queryParams]="item.queryParams ?? {}"
+              routerLinkActive="border-black dark:border-white"
+              class="block border-b-2 border-transparent pb-2.5 text-sm whitespace-nowrap transition-colors hover:border-black dark:hover:border-white"
+              [class.font-semibold]="item.highlight"
+              [class.text-sale]="item.highlight"
             >
               {{ item.label }}
             </a>
           </li>
         }
       </ul>
-    </div>
-
-
-
-
-
-    <!-- Actions (mobile) -->
-    <div class="flex items-center gap-1 md:hidden">
-      <!-- Bascule de thème -->
-      <button
-        type="button"
-        class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-        [attr.aria-label]="theme() === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre'"
-        (click)="toggleTheme()"
-      >
-        @if (theme() === 'dark') {
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="4" />
-            <path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41" />
-          </svg>
-        } @else {
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
-          </svg>
-        }
-      </button>
-
-      <!-- Bouton menu -->
-      <button
-        type="button"
-        class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-        [attr.aria-expanded]="menuOpen()"
-        aria-controls="mobile-menu"
-        aria-label="Ouvrir le menu"
-        (click)="toggleMenu()"
-      >
-        @if (menuOpen()) {
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-          </svg>
-        } @else {
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        }
-      </button>
-    </div>
-  </nav>
+    </nav>
+  </div>
 
   <!-- Menu déroulant (mobile) -->
   @if (menuOpen()) {
-    <div id="mobile-menu" class="border-t border-gray-200 bg-white md:hidden dark:border-gray-800 dark:bg-gray-900">
-      <ul class="space-y-1 px-4 py-3">
+    <div id="mobile-menu" class="border-t border-gray-200 bg-white md:hidden dark:border-gray-800 dark:bg-gray-950">
+      <ul class="max-h-[60vh] divide-y divide-gray-100 overflow-y-auto px-4 dark:divide-gray-800">
         @for (item of navItems; track item.label) {
           <li>
             <a
-              [href]="item.link"
-              class="block rounded-lg px-3 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-orange-50 hover:text-orange-600 dark:text-gray-200 dark:hover:bg-orange-500/10 dark:hover:text-orange-500"
+              [routerLink]="item.link"
+              [queryParams]="item.queryParams ?? {}"
+              class="flex items-center justify-between py-3 text-sm"
+              [class.text-sale]="item.highlight"
               (click)="closeMenu()"
             >
               {{ item.label }}
+              <i class="pi pi-angle-right text-gray-400"></i>
             </a>
           </li>
         }
       </ul>
-      <div class="flex flex-col gap-2 border-t border-gray-200 px-4 py-4 dark:border-gray-800">
-        <app-button (click)="closeMenu()">Sign in</app-button>
-        <app-button (click)="closeMenu()">Sign up</app-button>
+      <div class="grid grid-cols-2 gap-2 border-t border-gray-200 px-4 py-4 dark:border-gray-800">
+        @if (user()) {
+          <a routerLink="/commandes" class="col-span-2" (click)="closeMenu()"><app-button [v]="1">Mes commandes</app-button></a>
+          @if (isAdmin()) {
+            <a routerLink="/admin" class="col-span-2" (click)="closeMenu()"><app-button [v]="1">Administration</app-button></a>
+          }
+          <app-button class="col-span-2" (click)="logout()">Se déconnecter</app-button>
+        } @else {
+          <a routerLink="/connexion" (click)="closeMenu()"><app-button>Se connecter</app-button></a>
+          <a routerLink="/connexion" [queryParams]="{ mode: 'inscription' }" (click)="closeMenu()"><app-button [v]="1">S'inscrire</app-button></a>
+        }
       </div>
     </div>
   }

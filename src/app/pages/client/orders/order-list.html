@@ -1,0 +1,52 @@
+<my-container>
+  <div class="py-8">
+    <h1 class="mb-6 text-xl font-bold">Mes commandes</h1>
+
+    @if (error(); as message) {
+      <p class="mb-4 border border-sale/40 bg-sale-soft p-4 text-sm text-sale dark:bg-gray-900">{{ message }}</p>
+    }
+
+    @if (loading()) {
+      <p class="py-16 text-center text-sm text-gray-500">Chargement…</p>
+    } @else if (result()?.content?.length) {
+      <ul class="divide-y divide-gray-200 border-y border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+        @for (order of result()?.content ?? []; track order.id) {
+          <li>
+            <a [routerLink]="['/commandes', order.id]" class="flex flex-wrap items-center gap-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-900">
+              <div class="flex -space-x-3">
+                @for (item of order.items.slice(0, 3); track $index) {
+                  <img
+                    [src]="item.image"
+                    [alt]="item.title"
+                    class="h-16 w-12 border-2 border-white bg-gray-100 object-cover dark:border-gray-950 dark:bg-gray-800"
+                    loading="lazy"
+                  />
+                }
+              </div>
+
+              <div class="min-w-0">
+                <p class="font-mono text-sm">{{ order.reference }}</p>
+                <p class="text-xs text-gray-500">
+                  {{ order.createdAt | date: 'dd/MM/yyyy' }} · {{ order.items.length }} article{{ order.items.length > 1 ? 's' : '' }}
+                </p>
+              </div>
+
+              <span class="ml-auto text-sm text-gray-600 dark:text-gray-300">{{ statusLabels[order.status] }}</span>
+              <span class="w-24 text-right font-semibold">{{ order.total | currency }}</span>
+              <i class="pi pi-angle-right text-gray-400"></i>
+            </a>
+          </li>
+        }
+      </ul>
+
+      <div class="mt-6">
+        <app-pagination [page]="result()" (pageChange)="load($event)" />
+      </div>
+    } @else {
+      <div class="py-20 text-center">
+        <p class="mb-4 text-sm text-gray-500">Vous n'avez pas encore passé de commande.</p>
+        <a routerLink="/produits" class="shop-btn">Découvrir les produits</a>
+      </div>
+    }
+  </div>
+</my-container>

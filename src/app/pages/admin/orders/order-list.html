@@ -1,0 +1,117 @@
+<div class="mb-6 flex flex-wrap items-center gap-3">
+  <h1 class="text-xl font-bold">Commandes</h1>
+
+  <div class="ml-auto flex items-center gap-2">
+    <label class="text-sm text-gray-500" for="status">Statut</label>
+    <select id="status" class="admin-input w-44" [value]="filter()" (change)="onFilterChange($any($event.target).value)">
+      <option value="">Tous</option>
+      @for (status of statuses; track status) {
+        <option [value]="status" [selected]="status === filter()">{{ statusLabels[status] }}</option>
+      }
+    </select>
+  </div>
+</div>
+
+@if (error(); as message) {
+  <p class="admin-panel mb-4 border-sale/40 p-4 text-sm text-sale">{{ message }}</p>
+}
+
+<div class="admin-panel overflow-x-auto">
+  <table class="w-full min-w-3xl text-sm">
+    <thead class="border-b border-gray-200 dark:border-gray-800">
+      <tr>
+        <th class="admin-th">Référence</th>
+        <th class="admin-th">Date</th>
+        <th class="admin-th">Client</th>
+        <th class="admin-th">Articles</th>
+        <th class="admin-th text-right">Total</th>
+        <th class="admin-th">Statut</th>
+        <th class="admin-th text-right">Faire passer à</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+      @for (order of result()?.content ?? []; track order.id) {
+        <tr>
+          <td class="admin-td">
+            <button type="button" class="flex items-center gap-2 font-mono text-xs hover:underline" (click)="toggleDetails(order.id)">
+              <i class="pi text-gray-400" [class.pi-angle-down]="expanded() === order.id" [class.pi-angle-right]="expanded() !== order.id"></i>
+              {{ order.reference }}
+            </button>
+          </td>
+          <td class="admin-td text-gray-500">{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td class="admin-td text-gray-500">#{{ order.userId }}</td>
+          <td class="admin-td text-gray-500">{{ order.items.length }}</td>
+          <td class="admin-td text-right font-semibold">{{ order.total | currency }}</td>
+          <td class="admin-td"><app-order-status-badge [status]="order.status" /></td>
+          <td class="admin-td">
+            <div class="flex justify-end">
+              @if (nextStatuses(order.status).length) {
+                <select class="admin-input w-40" [value]="''" (change)="changeStatus(order, $any($event.target).value)">
+                  <option value="">Changer…</option>
+                  @for (status of nextStatuses(order.status); track status) {
+                    <option [value]="status">{{ statusLabels[status] }}</option>
+                  }
+                </select>
+              } @else {
+                <span class="text-xs text-gray-400">Statut final</span>
+              }
+            </div>
+          </td>
+        </tr>
+
+        @if (expanded() === order.id) {
+          <tr class="bg-gray-50 dark:bg-gray-950/50">
+            <td class="admin-td" colspan="7">
+              <div class="grid gap-6 md:grid-cols-[1fr_16rem]">
+                <div>
+                  <h2 class="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">Articles</h2>
+                  <ul class="space-y-2">
+                    @for (item of order.items; track $index) {
+                      <li class="flex items-center gap-3">
+                        <img [src]="item.image" [alt]="item.title" class="h-12 w-10 rounded object-cover" loading="lazy" />
+                        <span class="min-w-0 flex-1">
+                          <span class="line-clamp-1">{{ item.title }}</span>
+                          <span class="text-xs text-gray-500">{{ item.unitPrice | currency }} × {{ item.quantity }}</span>
+                        </span>
+                        <span class="font-semibold">{{ item.lineTotal | currency }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <p class="mt-3 text-xs text-gray-500">
+                    Sous-total {{ order.subtotal | currency }} · Livraison {{ order.shippingCost | currency }}
+                  </p>
+                </div>
+
+                <div>
+                  <h2 class="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">Livraison</h2>
+                  <address class="text-sm not-italic text-gray-600 dark:text-gray-300">
+                    {{ order.shippingAddress.fullName }}<br />
+                    {{ order.shippingAddress.line1 }}<br />
+                    @if (order.shippingAddress.line2) {
+                      {{ order.shippingAddress.line2 }}<br />
+                    }
+                    {{ order.shippingAddress.postalCode }} {{ order.shippingAddress.city }}<br />
+                    {{ order.shippingAddress.country }}
+                    @if (order.shippingAddress.phone) {
+                      <br />{{ order.shippingAddress.phone }}
+                    }
+                  </address>
+                </div>
+              </div>
+            </td>
+          </tr>
+        }
+      } @empty {
+        <tr>
+          <td class="admin-td text-gray-500" colspan="7">
+            {{ loading() ? 'Chargement…' : 'Aucune commande pour ce filtre.' }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="mt-4">
+  <app-pagination [page]="result()" (pageChange)="load($event)" />
+</div>

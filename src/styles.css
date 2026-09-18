@@ -1,16 +1,104 @@
-/* You can add global styles to this file, and also import other style files */
-
 /* Ordre des layers CSS : les styles PrimeNG (layer « primeng ») passent avant
    les utilitaires Tailwind afin que les classes Tailwind puissent surcharger
    les composants PrimeNG. */
-@layer theme, base, primeng, utilities;
+@layer theme, base, primeng, components, utilities;
 
 @import "primeicons/primeicons.css";
-
-/* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
 
 /* Le variant `dark:` de Tailwind suit la classe .app-dark posée sur <html>
    (même sélecteur que le mode sombre PrimeNG). */
 @custom-variant dark (&:where(.app-dark, .app-dark *));
+
+/* Couleurs de la charte (style Shein : noir & blanc, rouge-orangé pour les promos).
+   Utilisables en classes Tailwind : text-sale, bg-sale, border-sale… */
+@theme {
+  --color-sale: #fa6338;
+  --color-sale-soft: #fff1ec;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100;
+  }
+}
+
+/* Swiper est chargé après l'hydratation : en attendant, on évite que les
+   slides s'empilent verticalement. */
+swiper-container:not(:defined) {
+  display: flex;
+  overflow: hidden;
+}
+
+swiper-container:not(:defined) > swiper-slide {
+  flex-shrink: 0;
+}
+
+/* Boutons précédent / suivant des carrousels : apparaissent au survol du
+   parent portant la classe « group ». */
+@layer components {
+  .carousel-nav {
+    @apply absolute top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/90 text-gray-900 opacity-0 shadow transition group-hover:opacity-100 hover:bg-black hover:text-white focus-visible:opacity-100;
+  }
+}
+
+/* --- Back-office --- */
+@layer components {
+  .admin-panel {
+    @apply rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900;
+  }
+
+  .admin-btn {
+    @apply inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-gray-200;
+  }
+
+  .admin-btn-ghost {
+    @apply inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-gray-300 px-3 text-sm transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800;
+  }
+
+  .admin-input {
+    @apply h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-black dark:border-gray-700 dark:bg-gray-950 dark:focus:border-white;
+  }
+
+  .admin-label {
+    @apply mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400;
+  }
+
+  .admin-th {
+    @apply px-4 py-2.5 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase;
+  }
+
+  .pagination-btn {
+    @apply inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-gray-300 px-3 text-sm transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800;
+  }
+
+  /* Boutons pleine largeur de la boutique (ajouter au panier, commander…) */
+  .shop-btn {
+    @apply inline-flex h-11 items-center justify-center gap-2 bg-black px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-gray-200;
+  }
+
+  .shop-btn-outline {
+    @apply inline-flex h-11 items-center justify-center gap-2 border border-black px-6 text-sm font-semibold transition-colors hover:bg-black hover:text-white dark:border-white dark:hover:bg-white dark:hover:text-black;
+  }
+
+  .shop-input {
+    @apply h-10 w-full border border-gray-300 bg-white px-3 text-sm outline-none focus:border-black dark:border-gray-700 dark:bg-gray-950 dark:focus:border-white;
+  }
+
+  .shop-label {
+    @apply mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400;
+  }
+
+  .admin-td {
+    @apply px-4 py-3 align-middle;
+  }
+}
+
+/* Masque la barre de défilement (menus horizontaux) tout en gardant le scroll. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
