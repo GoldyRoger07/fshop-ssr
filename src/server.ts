@@ -112,6 +112,16 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
     process.exit(1);
   }
 
+  // Une API_URL invalide (sans « https:// », avec /api…) ferait échouer chaque appel
+  // en 502 : on l'affiche au démarrage et on refuse une URL mal formée.
+  if (!/^https?:\/\/[^/]+$/.test(apiUrl)) {
+    console.error(
+      `API_URL invalide (« ${apiUrl} ») : indiquez l'adresse de fshop-api sans /api, ex. API_URL=https://fshop-api.example.com`,
+    );
+    process.exit(1);
+  }
+  console.log(`API FShop : ${apiUrl}`);
+
   const port = process.env['PORT'] || 4000;
   app.listen(port, (error) => {
     if (error) {
