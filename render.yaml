@@ -18,7 +18,8 @@ services:
       # Render attribue une autre URL (nom déjà pris) ou si vous ajoutez un domaine.
       - key: NG_ALLOWED_HOSTS
         value: fshop-ssr.onrender.com
-      # URL de fshop-api, sans le préfixe /api (ex. https://fshop-api.onrender.com).
+      # URL de fshop-api sur Railway, sans le préfixe /api ni « / » final
+      # (ex. https://fshop-api-production.up.railway.app).
       # Demandée lors de la création du blueprint.
       - key: API_URL
         sync: false
