@@ -27,6 +27,11 @@ const hopByHopHeaders = new Set([
   'accept-encoding',
 ]);
 
+/** Health check de l'hébergeur : répond sans rendu Angular ni appel à l'API. */
+app.get('/healthz', (_req, res) => {
+  res.type('text/plain').send('ok');
+});
+
 /**
  * Relaie /api/** vers fshop-api : le navigateur (et le rendu serveur) appellent
  * la même origine que le site, sans configuration CORS.

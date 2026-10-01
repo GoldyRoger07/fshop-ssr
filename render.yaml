@@ -9,7 +9,8 @@ services:
     branch: main
     buildCommand: npm ci && npm run build
     startCommand: npm run serve:ssr:fshop-ssr
-    healthCheckPath: /
+    # Route légère de server.ts (sans rendu Angular).
+    healthCheckPath: /healthz
     envVars:
       # Angular 22 exige Node ^22.22.3, ^24.15.0 ou >=26.
       - key: NODE_VERSION
@@ -18,6 +19,9 @@ services:
       # Render attribue une autre URL (nom déjà pris) ou si vous ajoutez un domaine.
       - key: NG_ALLOWED_HOSTS
         value: fshop-ssr.onrender.com
+      # Le proxy de Render termine le HTTPS et transmet le protocole d'origine.
+      - key: NG_TRUST_PROXY_HEADERS
+        value: x-forwarded-proto
       # URL de fshop-api sur Railway, sans le préfixe /api ni « / » final
       # (ex. https://fshop-api-production.up.railway.app).
       # Demandée lors de la création du blueprint.
