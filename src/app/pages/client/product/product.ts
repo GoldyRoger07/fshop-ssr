@@ -1,19 +1,21 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CatalogService } from '../../../services/catalog.service';
-import { CartService, FREE_SHIPPING_THRESHOLD } from '../../../services/cart.service';
+import { CartService } from '../../../services/cart.service';
+import { SettingsService } from '../../../services/settings.service';
 import { WishlistService } from '../../../services/wishlist.service';
 import { discountPercent, Product } from '../../../models/product.model';
 import { Container } from '../../../components/container/container';
 import { ProductCard } from '../../../components/product-card/product-card';
 import { QuantityInput } from '../../../components/quantity-input/quantity-input';
 import { errorMessage } from '../../../shared/api-error';
+import { MoneyPipe } from '../../../shared/money';
 
 /** Fiche produit (/produit/:id). */
 @Component({
   selector: 'app-product-page',
-  imports: [RouterLink, CurrencyPipe, DecimalPipe, Container, ProductCard, QuantityInput],
+  imports: [RouterLink, MoneyPipe, DecimalPipe, Container, ProductCard, QuantityInput],
   templateUrl: './product.html',
 })
 export default class ProductPage {
@@ -24,7 +26,7 @@ export default class ProductPage {
   /** Paramètre d'URL « id ». */
   readonly id = input.required<string>();
 
-  protected readonly freeShippingThreshold = FREE_SHIPPING_THRESHOLD;
+  protected readonly settings = inject(SettingsService).settings;
 
   protected readonly product = signal<Product | null>(null);
   protected readonly related = signal<Product[]>([]);
@@ -45,7 +47,14 @@ export default class ProductPage {
     return product ? this.wishlist.has(product.id) : false;
   });
 
-  protected readonly maxQuantity = computed(() => Math.max(1, Math.min(99, this.product()?.stock ?? 99)));
+  protected readonly maxQuantity = computed(() => {
+    const limit = this.settings().maxQuantityPerItem;
+    return Math.max(1, Math.min(limit, this.product()?.stock ?? limit));
+  });
+  protected readonly lowStock = computed(() => {
+    const stock = this.product()?.stock;
+    return stock !== undefined && stock > 0 && stock <= this.settings().lowStockThreshold;
+  });
   protected readonly outOfStock = computed(() => this.product()?.stock === 0);
 
   constructor() {

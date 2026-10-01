@@ -1,4 +1,4 @@
-import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -6,11 +6,12 @@ import { AdminService } from '../../../services/admin.service';
 import { Order, ORDER_STATUS_LABELS, OrderStatus } from '../../../models/order.model';
 import { errorMessage } from '../../../shared/api-error';
 import { OrderStatusBadge } from '../orders/order-status-badge';
+import { MoneyPipe } from '../../../shared/money';
 
 /** Vue d'ensemble : chiffres clés et dernières commandes. */
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink, CurrencyPipe, DatePipe, DecimalPipe, OrderStatusBadge],
+  imports: [RouterLink, MoneyPipe, DatePipe, DecimalPipe, OrderStatusBadge],
   templateUrl: './dashboard.html',
 })
 export default class Dashboard {

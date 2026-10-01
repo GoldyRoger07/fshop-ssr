@@ -31,8 +31,22 @@
                 </p>
               </div>
 
-              <span class="ml-auto text-sm text-gray-600 dark:text-gray-300">{{ statusLabels[order.status] }}</span>
-              <span class="w-24 text-right font-semibold">{{ order.total | currency }}</span>
+              <span class="ml-auto text-sm text-gray-600 dark:text-gray-300">
+                @if (order.status === 'PENDING' && order.paymentMethod && order.paymentMethod !== 'CASH_ON_DELIVERY') {
+                  <span class="font-semibold text-amber-700 dark:text-amber-400">
+                    {{
+                      order.paymentDeclaredAt
+                        ? 'Paiement en vérification'
+                        : order.paymentRejectedAt
+                          ? 'Paiement introuvable'
+                          : 'À payer'
+                    }}
+                  </span>
+                } @else {
+                  {{ statusLabels[order.status] }}
+                }
+              </span>
+              <span class="w-32 text-right font-semibold">{{ order.total | money: order.currency }}</span>
               <i class="pi pi-angle-right text-gray-400"></i>
             </a>
           </li>

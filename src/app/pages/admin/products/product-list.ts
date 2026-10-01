@@ -1,23 +1,25 @@
-import { CurrencyPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminService } from '../../../services/admin.service';
+import { SettingsService } from '../../../services/settings.service';
 import { Category } from '../../../models/category.model';
 import { Page } from '../../../models/page.model';
 import { Product } from '../../../models/product.model';
 import { Pagination } from '../../../components/pagination/pagination';
 import { errorMessage } from '../../../shared/api-error';
+import { MoneyPipe } from '../../../shared/money';
 
 const PAGE_SIZE = 20;
 
 /** Liste des produits avec recherche, filtre par catégorie et suppression. */
 @Component({
   selector: 'app-admin-product-list',
-  imports: [RouterLink, CurrencyPipe, Pagination],
+  imports: [RouterLink, MoneyPipe, Pagination],
   templateUrl: './product-list.html',
 })
 export default class ProductList {
   private readonly admin = inject(AdminService);
+  protected readonly settings = inject(SettingsService).settings;
 
   protected readonly categories = signal<Category[]>([]);
   protected readonly result = signal<Page<Product> | null>(null);

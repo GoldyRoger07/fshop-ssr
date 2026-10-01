@@ -1,4 +1,10 @@
-import { ApplicationConfig, DEFAULT_CURRENCY_CODE, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  LOCALE_ID,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import localeFr from '@angular/common/locales/fr';
@@ -9,8 +15,10 @@ import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { AppPreset } from './theme/app-preset';
 import { authInterceptor } from './auth/auth.interceptor';
+import { SettingsService } from './services/settings.service';
 
-// Formats français (prix « 12,99 € », dates…), côté serveur comme navigateur.
+// Formats français (nombres, dates…), côté serveur comme navigateur. La devise des prix
+// vient des paramètres de la boutique (pipe « money », shared/money.ts).
 registerLocaleData(localeFr);
 
 export const appConfig: ApplicationConfig = {
@@ -21,8 +29,9 @@ export const appConfig: ApplicationConfig = {
     // Appels à fshop-api. Les GET faits pendant le rendu serveur sont transmis au
     // navigateur (cache de transfert de l'hydratation) : pas de double requête.
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    // Paramètres de la boutique (frais de port, bandeau…) avant le premier rendu.
+    provideAppInitializer(() => inject(SettingsService).load()),
     { provide: LOCALE_ID, useValue: 'fr-FR' },
-    { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' },
     providePrimeNG({
       theme: {
         preset: AppPreset,

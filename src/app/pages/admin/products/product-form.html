@@ -48,12 +48,12 @@
       </div>
 
       <div>
-        <label class="admin-label" for="price">Prix (€) *</label>
+        <label class="admin-label" for="price">Prix ({{ currency() }}) *</label>
         <input id="price" type="number" min="0" step="0.01" class="admin-input" formControlName="price" />
       </div>
 
       <div>
-        <label class="admin-label" for="originalPrice">Prix barré (€)</label>
+        <label class="admin-label" for="originalPrice">Prix barré ({{ currency() }})</label>
         <input id="originalPrice" type="number" min="0" step="0.01" class="admin-input" formControlName="originalPrice" />
         <p class="mt-1 text-xs text-gray-500">0 = pas de promotion</p>
       </div>

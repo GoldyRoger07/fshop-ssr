@@ -1,0 +1,189 @@
+@let o = order();
+
+@if (method(); as method) {
+  <section class="border border-gray-200 p-5 dark:border-gray-800">
+    <h2 class="mb-4 flex items-center gap-2 font-semibold">
+      <span class="rounded px-1.5 py-0.5 text-xs font-bold" [class]="badges[method].classes">
+        {{ badges[method].text }}
+      </span>
+      @if (awaitingPayment() && !o.paymentDeclaredAt) {
+        Payez avec {{ labels[method] }} en 3 étapes
+      } @else {
+        Paiement : {{ labels[method] }}
+      }
+    </h2>
+
+    <!-- État du paiement -->
+    @if (o.paidAt) {
+      <p class="bg-green-50 p-3 text-sm text-green-800 dark:bg-green-950/30 dark:text-green-400">
+        <i class="pi pi-check-circle mr-1"></i> Paiement reçu le {{ o.paidAt | date: 'dd/MM/yyyy' }}. Merci !
+      </p>
+    } @else if (o.status === 'CANCELLED') {
+      <p class="text-sm text-gray-500">Commande annulée : aucun paiement n'est attendu.</p>
+    } @else if (method === 'CASH_ON_DELIVERY') {
+      <ol class="space-y-3 text-sm">
+        <li class="flex gap-3">
+          <span class="step-dot bg-green-600 text-white"><i class="pi pi-check text-[10px]"></i></span>
+          <span>Commande confirmée : nous la préparons.</span>
+        </li>
+        <li class="flex gap-3">
+          <span class="step-dot">2</span>
+          <span>
+            Le livreur vous appelle au <strong>{{ o.shippingAddress.phone }}</strong> avant de passer : gardez votre
+            téléphone à portée de main.
+          </span>
+        </li>
+        <li class="flex gap-3">
+          <span class="step-dot">3</span>
+          <span>
+            Payez <strong>{{ o.total | money: o.currency }}</strong> en espèces à la remise du colis. Préparez l'appoint si
+            possible.
+          </span>
+        </li>
+      </ol>
+    } @else if (awaitingPayment()) {
+      @if (o.paymentRejectedAt && !o.paymentDeclaredAt) {
+        <p class="mb-4 border border-sale/40 bg-sale-soft p-3 text-sm text-sale dark:bg-gray-900" role="alert">
+          <i class="pi pi-exclamation-triangle mr-1"></i>
+          Nous n'avons pas retrouvé votre paiement (ID {{ o.paymentTransactionId }}). Vérifiez l'ID dans le SMS de
+          {{ labels[method] }} et renvoyez-le ci-dessous.
+        </p>
+      }
+
+      @if (o.paymentDeclaredAt && !editing()) {
+        <!-- Paiement envoyé, en vérification -->
+        <div class="bg-blue-50 p-4 text-sm text-blue-900 dark:bg-blue-950/30 dark:text-blue-200">
+          <p class="font-semibold"><i class="pi pi-clock mr-1"></i> Paiement en cours de vérification</p>
+          <p class="mt-1">
+            ID <strong class="font-mono">{{ o.paymentTransactionId }}</strong>, envoyé depuis le
+            {{ formatPhone(o.paymentSenderPhone ?? '') }} le {{ o.paymentDeclaredAt | date: 'dd/MM à HH:mm' }}.
+            Nous confirmons dès réception et préparons votre colis.
+          </p>
+          <button type="button" class="mt-2 text-xs underline" (click)="editing.set(true)">
+            Je me suis trompé d'ID
+          </button>
+        </div>
+      } @else if (wallet(); as account) {
+        <ol class="space-y-5 text-sm">
+          <!-- Étape 1 -->
+          <li class="flex gap-3">
+            <span class="step-dot">1</span>
+            <div>
+              <p class="font-medium">Ouvrez {{ labels[method] }} sur votre téléphone</p>
+              <p class="text-xs text-gray-500">Application ou menu {{ labels[method] }}, puis l'envoi / transfert d'argent.</p>
+            </div>
+          </li>
+
+          <!-- Étape 2 -->
+          <li class="flex gap-3">
+            <span class="step-dot">2</span>
+            <div class="min-w-0 flex-1">
+              <p class="font-medium">Envoyez exactement ce montant à ce numéro</p>
+              <dl class="mt-2 divide-y divide-gray-100 border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+                <div class="flex items-center justify-between gap-3 px-3 py-2">
+                  <dt class="text-gray-500">Numéro</dt>
+                  <dd class="flex items-center gap-2">
+                    <strong class="font-mono text-base">{{ formatPhone(account.number ?? '') }}</strong>
+                    <button
+                      type="button"
+                      class="text-gray-400 hover:text-black dark:hover:text-white"
+                      aria-label="Copier le numéro"
+                      (click)="copy(account.number ?? '')"
+                    >
+                      <i class="pi" [class]="copied() === account.number ? 'pi-check text-green-600' : 'pi-copy'"></i>
+                    </button>
+                  </dd>
+                </div>
+                <div class="flex items-center justify-between gap-3 px-3 py-2">
+                  <dt class="text-gray-500">Montant</dt>
+                  <dd class="flex items-center gap-2">
+                    <strong class="text-base">{{ o.total | money: o.currency }}</strong>
+                    <button
+                      type="button"
+                      class="text-gray-400 hover:text-black dark:hover:text-white"
+                      aria-label="Copier le montant"
+                      (click)="copy(o.total.toFixed(2))"
+                    >
+                      <i class="pi" [class]="copied() === o.total.toFixed(2) ? 'pi-check text-green-600' : 'pi-copy'"></i>
+                    </button>
+                  </dd>
+                </div>
+              </dl>
+              <p class="mt-2 text-xs text-gray-500">
+                <i class="pi pi-shield mr-1"></i>
+                Avant de valider avec votre code, vérifiez que le nom affiché est bien <strong>{{ account.name }}</strong>.
+              </p>
+              @if (o.paymentDueAt) {
+                <p class="mt-1 text-xs text-gray-500">
+                  <i class="pi pi-clock mr-1"></i>
+                  À payer avant le {{ o.paymentDueAt | date: 'dd/MM à HH:mm' }}, sinon la commande est annulée.
+                </p>
+              }
+            </div>
+          </li>
+
+          <!-- Étape 3 -->
+          <li class="flex gap-3">
+            <span class="step-dot">3</span>
+            <form class="min-w-0 flex-1" [formGroup]="form" (ngSubmit)="submit()">
+              <p class="font-medium">Indiquez l'ID de transaction reçu par SMS</p>
+              <p class="mb-3 text-xs text-gray-500">
+                {{ labels[method] }} vous envoie un SMS de confirmation avec un numéro de transaction : recopiez-le ici.
+              </p>
+
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label class="shop-label" for="transactionId">ID de transaction *</label>
+                  <input
+                    id="transactionId"
+                    class="shop-input font-mono uppercase"
+                    formControlName="transactionId"
+                    autocomplete="off"
+                    autocapitalize="characters"
+                    placeholder="Ex. 1234567890"
+                    [class.border-sale]="invalid('transactionId')"
+                  />
+                  @if (invalid('transactionId')) {
+                    <p class="mt-1 text-xs text-sale">Lettres et chiffres, tel qu'indiqué dans le SMS.</p>
+                  }
+                </div>
+                <div>
+                  <label class="shop-label" for="senderPhone">Numéro qui a payé *</label>
+                  <input
+                    id="senderPhone"
+                    type="tel"
+                    inputmode="tel"
+                    class="shop-input"
+                    formControlName="senderPhone"
+                    placeholder="3712 3456"
+                    [class.border-sale]="invalid('senderPhone')"
+                  />
+                  @if (invalid('senderPhone')) {
+                    <p class="mt-1 text-xs text-sale">8 chiffres, ex. 3712 3456.</p>
+                  }
+                </div>
+              </div>
+
+              @if (error(); as message) {
+                <p class="mt-3 text-sm text-sale" role="alert">{{ message }}</p>
+              }
+
+              <div class="mt-4 flex flex-wrap items-center gap-3">
+                <button type="submit" class="shop-btn" [disabled]="submitting()">
+                  <i class="pi pi-send"></i>{{ submitting() ? 'Envoi…' : 'Confirmer mon paiement' }}
+                </button>
+                @if (editing()) {
+                  <button type="button" class="text-sm underline" (click)="editing.set(false)">Annuler</button>
+                }
+              </div>
+            </form>
+          </li>
+        </ol>
+      } @else {
+        <p class="text-sm text-gray-500">
+          {{ labels[method] }} n'est plus proposé : contactez la boutique pour régler votre commande.
+        </p>
+      }
+    }
+  </section>
+}

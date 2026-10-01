@@ -1,13 +1,14 @@
 import { Component, computed, inject, input } from '@angular/core';
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { discountPercent, Product } from '../../models/product.model';
 import { CartService } from '../../services/cart.service';
 import { WishlistService } from '../../services/wishlist.service';
+import { MoneyPipe } from '../../shared/money';
 
 @Component({
   selector: 'app-product-card',
-  imports: [RouterLink, CurrencyPipe, DecimalPipe],
+  imports: [RouterLink, MoneyPipe, DecimalPipe],
   templateUrl: './product-card.html',
 })
 export class ProductCard {

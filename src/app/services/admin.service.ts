@@ -5,6 +5,7 @@ import { Category } from '../models/category.model';
 import { Order, OrderStatus } from '../models/order.model';
 import { Page } from '../models/page.model';
 import { Product, ProductTag } from '../models/product.model';
+import { StoreSettings, StoreSettingsRequest } from '../models/settings.model';
 import { ProductQuery } from './catalog.service';
 import { API_URL } from './api';
 
@@ -88,9 +89,12 @@ export class AdminService {
 
   // --- Commandes ---
 
-  getOrders(status?: OrderStatus, page = 0, size = 20): Observable<Page<Order>> {
+  /** {@code toVerify} : uniquement les paiements signalés par les clients, en attente de vérification. */
+  getOrders(status?: OrderStatus, page = 0, size = 20, toVerify = false): Observable<Page<Order>> {
     let params = new HttpParams().set('page', page).set('size', size);
-    if (status) {
+    if (toVerify) {
+      params = params.set('toVerify', true);
+    } else if (status) {
       params = params.set('status', status);
     }
     return this.http.get<Page<Order>>(`${API_URL}/admin/orders`, { params });
@@ -98,5 +102,20 @@ export class AdminService {
 
   updateOrderStatus(id: number, status: OrderStatus): Observable<Order> {
     return this.http.patch<Order>(`${API_URL}/admin/orders/${id}/status`, { status });
+  }
+
+  /** Paiement signalé introuvable : le client est invité à corriger son identifiant. */
+  rejectPayment(id: number): Observable<Order> {
+    return this.http.post<Order>(`${API_URL}/admin/orders/${id}/payment-rejected`, null);
+  }
+
+  // --- Paramètres de la boutique ---
+
+  getSettings(): Observable<StoreSettings> {
+    return this.http.get<StoreSettings>(`${API_URL}/admin/settings`);
+  }
+
+  updateSettings(request: StoreSettingsRequest): Observable<StoreSettings> {
+    return this.http.put<StoreSettings>(`${API_URL}/admin/settings`, request);
   }
 }

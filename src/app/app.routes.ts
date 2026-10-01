@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './auth/admin.guard';
 import { authGuard } from './auth/auth.guard';
+import { INFO_ROUTES } from './pages/client/info/info-pages';
 
 export const routes: Routes = [
   {
@@ -50,6 +51,8 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () => import('./pages/client/orders/order-detail'),
       },
+      // Pages d'information (livraison, CGV, FAQ…), liées depuis le footer
+      ...INFO_ROUTES,
     ],
   },
   {
@@ -87,6 +90,11 @@ export const routes: Routes = [
         path: 'commandes',
         title: 'Commandes – Administration Fshop',
         loadComponent: () => import('./pages/admin/orders/order-list'),
+      },
+      {
+        path: 'parametres',
+        title: 'Paramètres – Administration Fshop',
+        loadComponent: () => import('./pages/admin/settings/settings'),
       },
     ],
   },

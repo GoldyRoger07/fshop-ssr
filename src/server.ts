@@ -98,6 +98,15 @@ app.use((req, res, next) => {
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
+  // Le rendu serveur rejette tout domaine absent de cette liste (en plus de
+  // « localhost », déclaré dans angular.json) : on refuse de démarrer sans elle.
+  if (!process.env['NG_ALLOWED_HOSTS']?.trim()) {
+    console.error(
+      'NG_ALLOWED_HOSTS manquant : indiquez le(s) domaine(s) du site, ex. NG_ALLOWED_HOSTS=fshop.fr,www.fshop.fr',
+    );
+    process.exit(1);
+  }
+
   const port = process.env['PORT'] || 4000;
   app.listen(port, (error) => {
     if (error) {

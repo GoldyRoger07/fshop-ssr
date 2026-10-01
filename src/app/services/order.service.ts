@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { Order, ShippingAddress } from '../models/order.model';
+import { PaymentMethod } from '../models/payment.model';
 import { Page } from '../models/page.model';
 import { API_URL } from './api';
 import { CartService } from './cart.service';
@@ -13,9 +14,9 @@ export class OrderService {
   private readonly cart = inject(CartService);
 
   /** Transforme le panier en commande. L'API vide ensuite le panier. */
-  checkout(shippingAddress: ShippingAddress): Observable<Order> {
+  checkout(shippingAddress: ShippingAddress, paymentMethod: PaymentMethod): Observable<Order> {
     return this.http
-      .post<Order>(`${API_URL}/orders`, { shippingAddress })
+      .post<Order>(`${API_URL}/orders`, { shippingAddress, paymentMethod })
       .pipe(tap(() => this.cart.clear()));
   }
 
@@ -30,5 +31,10 @@ export class OrderService {
 
   cancel(id: number): Observable<Order> {
     return this.http.post<Order>(`${API_URL}/orders/${id}/cancel`, null);
+  }
+
+  /** « J'ai payé » : identifiant de transaction MonCash / NatCash reçu par SMS. */
+  declarePayment(id: number, transactionId: string, senderPhone: string): Observable<Order> {
+    return this.http.post<Order>(`${API_URL}/orders/${id}/payment-declared`, { transactionId, senderPhone });
   }
 }

@@ -4,7 +4,7 @@
 
     <!-- Avantages -->
     <ul class="-mt-4 grid grid-cols-2 gap-px overflow-hidden border border-gray-200 bg-gray-200 sm:-mt-6 lg:grid-cols-4 dark:border-gray-800 dark:bg-gray-800">
-      @for (benefit of benefits; track benefit.title) {
+      @for (benefit of benefits(); track benefit.title) {
         <li class="flex items-center gap-3 bg-white px-4 py-3 dark:bg-gray-950">
           <i class="pi text-gray-900 dark:text-gray-100" [class]="benefit.icon" style="font-size: 1.5rem"></i>
           <div class="leading-tight">
@@ -21,7 +21,7 @@
 
     <!-- Bons de réduction -->
     <section aria-label="Bons de réduction" class="grid gap-3 sm:grid-cols-3">
-      @for (coupon of coupons; track coupon.code) {
+      @for (coupon of coupons(); track coupon.code) {
         <div class="relative flex items-center justify-between gap-3 border border-dashed border-sale bg-sale-soft px-5 py-3 text-sale dark:bg-gray-900">
           <div>
             <p class="text-2xl leading-none font-extrabold">{{ coupon.amount }}</p>

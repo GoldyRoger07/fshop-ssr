@@ -10,7 +10,7 @@
   <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
     <div class="admin-panel p-5">
       <p class="text-xs tracking-wide text-gray-500 uppercase">Chiffre d'affaires</p>
-      <p class="mt-1 text-2xl font-bold">{{ revenue() | currency }}</p>
+      <p class="mt-1 text-2xl font-bold">{{ revenue() | money }}</p>
       <p class="mt-1 text-xs text-gray-500">Commandes non annulées</p>
     </div>
     <div class="admin-panel p-5">
@@ -53,7 +53,7 @@
                 <td class="admin-td font-mono text-xs">{{ order.reference }}</td>
                 <td class="admin-td text-gray-500">{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
                 <td class="admin-td"><app-order-status-badge [status]="order.status" /></td>
-                <td class="admin-td text-right font-semibold">{{ order.total | currency }}</td>
+                <td class="admin-td text-right font-semibold">{{ order.total | money: order.currency }}</td>
               </tr>
             }
           </tbody>

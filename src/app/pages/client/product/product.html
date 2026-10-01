@@ -33,9 +33,9 @@
           </p>
 
           <div class="mt-4 flex flex-wrap items-baseline gap-3">
-            <span class="text-3xl font-bold" [class.text-sale]="discount()">{{ p.price | currency }}</span>
+            <span class="text-3xl font-bold" [class.text-sale]="discount()">{{ p.price | money }}</span>
             @if (discount()) {
-              <span class="text-base text-gray-400 line-through">{{ p.originalPrice | currency }}</span>
+              <span class="text-base text-gray-400 line-through">{{ p.originalPrice | money }}</span>
               <span class="bg-sale-soft px-2 py-0.5 text-xs font-semibold text-sale">Économisez {{ discount() }} %</span>
             }
           </div>
@@ -43,7 +43,7 @@
           <p class="mt-2 text-sm">
             @if (outOfStock()) {
               <span class="font-semibold text-sale">Rupture de stock</span>
-            } @else if (p.stock !== undefined && p.stock <= 10) {
+            } @else if (lowStock()) {
               <span class="font-semibold text-sale">Plus que {{ p.stock }} en stock</span>
             } @else {
               <span class="text-green-700 dark:text-green-500">En stock</span>
@@ -79,10 +79,19 @@
 
           <ul class="mt-6 space-y-2 border-t border-gray-200 pt-6 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-400">
             <li class="flex items-center gap-2">
-              <i class="pi pi-truck"></i> Livraison gratuite dès {{ freeShippingThreshold | currency }} d'achat
+              <i class="pi pi-truck"></i>
+              @if (settings().freeShippingEnabled) {
+                Livraison gratuite dès {{ settings().freeShippingThreshold | money }} d'achat
+              } @else {
+                Livraison à {{ settings().shippingCost | money }}
+              }
             </li>
-            <li class="flex items-center gap-2"><i class="pi pi-replay"></i> Retours gratuits sous 30 jours</li>
-            <li class="flex items-center gap-2"><i class="pi pi-lock"></i> Paiement sécurisé</li>
+            @if (settings().returnDays > 0) {
+              <li class="flex items-center gap-2">
+                <i class="pi pi-replay"></i> Retours gratuits sous {{ settings().returnDays }} jours
+              </li>
+            }
+            <li class="flex items-center gap-2"><i class="pi pi-lock"></i> Aucune donnée bancaire demandée en ligne</li>
           </ul>
 
           @if (p.description) {

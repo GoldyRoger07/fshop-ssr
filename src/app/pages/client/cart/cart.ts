@@ -1,16 +1,17 @@
 import { Component, computed, inject } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../auth/auth.service';
-import { CartService, FREE_SHIPPING_THRESHOLD } from '../../../services/cart.service';
+import { CartService } from '../../../services/cart.service';
+import { SettingsService } from '../../../services/settings.service';
 import { discountPercent } from '../../../models/product.model';
 import { Container } from '../../../components/container/container';
 import { QuantityInput } from '../../../components/quantity-input/quantity-input';
+import { MoneyPipe } from '../../../shared/money';
 
 /** Panier (/panier). */
 @Component({
   selector: 'app-cart-page',
-  imports: [RouterLink, CurrencyPipe, Container, QuantityInput],
+  imports: [RouterLink, MoneyPipe, Container, QuantityInput],
   templateUrl: './cart.html',
 })
 export default class CartPage {
@@ -18,14 +19,18 @@ export default class CartPage {
   private readonly auth = inject(AuthService);
 
   protected readonly discountPercent = discountPercent;
-  protected readonly freeShippingThreshold = FREE_SHIPPING_THRESHOLD;
+  protected readonly settings = inject(SettingsService).settings;
 
   protected readonly items = this.cart.items;
   protected readonly count = this.cart.count;
   protected readonly subtotal = this.cart.subtotal;
   protected readonly shippingCost = this.cart.shippingCost;
   protected readonly total = this.cart.total;
+  protected readonly taxAmount = this.cart.taxAmount;
   protected readonly missingForFreeShipping = this.cart.missingForFreeShipping;
+  protected readonly missingForMinimum = this.cart.missingForMinimum;
+  /** Commandes suspendues ou minimum non atteint : pas de passage en caisse. */
+  protected readonly checkoutBlocked = computed(() => !this.settings().checkoutEnabled || this.missingForMinimum() > 0);
 
   /** Un visiteur doit se connecter avant de commander. */
   protected readonly checkoutLink = computed(() => (this.auth.isLoggedIn() ? '/commande' : '/connexion'));

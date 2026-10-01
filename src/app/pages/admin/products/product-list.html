@@ -63,12 +63,19 @@
           </td>
           <td class="admin-td text-gray-500">{{ product.categorySlug }}</td>
           <td class="admin-td text-right">
-            <span class="font-semibold">{{ product.price | currency }}</span>
+            <span class="font-semibold">{{ product.price | money }}</span>
             @if (product.originalPrice) {
-              <span class="ml-1 text-xs text-gray-400 line-through">{{ product.originalPrice | currency }}</span>
+              <span class="ml-1 text-xs text-gray-400 line-through">{{ product.originalPrice | money }}</span>
             }
           </td>
-          <td class="admin-td text-right" [class.text-sale]="(product.stock ?? 0) === 0">{{ product.stock ?? '—' }}</td>
+          <td
+            class="admin-td text-right"
+            [class.text-sale]="(product.stock ?? 0) === 0"
+            [class.text-amber-600]="product.stock && product.stock <= settings().lowStockThreshold"
+            [attr.title]="product.stock && product.stock <= settings().lowStockThreshold ? 'Stock faible' : null"
+          >
+            {{ product.stock ?? '—' }}
+          </td>
           <td class="admin-td text-gray-500">{{ product.tag ?? '—' }}</td>
           <td class="admin-td">
             <div class="flex justify-end gap-2">

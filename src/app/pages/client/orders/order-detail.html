@@ -8,7 +8,12 @@
           <i class="pi pi-check-circle mb-2 block text-green-600" style="font-size: 2rem"></i>
           <h1 class="text-lg font-bold">Merci, votre commande est enregistrée !</h1>
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
-            Un récapitulatif vous attend ci-dessous. Référence : <strong>{{ order.reference }}</strong>
+            Référence : <strong>{{ order.reference }}</strong>.
+            @if (isMobileWallet(order.paymentMethod)) {
+              Dernière étape : payez avec {{ paymentLabels[order.paymentMethod!] }} en suivant le guide ci-dessous.
+            } @else {
+              Nous préparons votre colis ; le livreur vous appellera avant de passer.
+            }
           </p>
         </div>
       } @else {
@@ -24,12 +29,47 @@
         <p class="mb-4 border border-sale/40 bg-sale-soft p-4 text-sm text-sale dark:bg-gray-900">{{ message }}</p>
       }
 
+      <!-- Suivi de la commande -->
+      @if (progress().length) {
+        <ol class="mb-8 grid gap-2 text-xs sm:flex sm:items-start" aria-label="Suivi de la commande">
+          @for (s of progress(); track s.label; let i = $index) {
+            @let current = !s.done && (i === 0 || progress()[i - 1].done);
+            <li class="flex items-center gap-2 sm:flex-1 sm:flex-col sm:text-center">
+              <span
+                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-bold"
+                [class]="
+                  s.done
+                    ? 'bg-green-600 text-white'
+                    : current
+                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      : 'bg-gray-200 text-gray-500 dark:bg-gray-800'
+                "
+                [attr.aria-current]="current ? 'step' : null"
+              >
+                @if (s.done) {
+                  <i class="pi pi-check text-xs"></i>
+                } @else {
+                  {{ i + 1 }}
+                }
+              </span>
+              <span [class]="s.done || current ? 'font-semibold' : 'text-gray-500'">{{ s.label }}</span>
+            </li>
+          }
+        </ol>
+      } @else if (order.status === 'CANCELLED') {
+        <p class="mb-6 bg-gray-100 p-3 text-sm dark:bg-gray-900">
+          <i class="pi pi-times-circle mr-1"></i> Cette commande a été annulée.
+        </p>
+      }
+
       <div class="grid gap-8 lg:grid-cols-[1fr_20rem]">
         <section>
           <div class="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 dark:text-gray-300">
             <span>Passée le {{ order.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</span>
             <span>Statut : <strong>{{ statusLabels[order.status] }}</strong></span>
           </div>
+
+          <app-payment-instructions class="mb-6 block" [order]="order" (orderChange)="updateOrder($event)" />
 
           <ul class="divide-y divide-gray-200 border-y border-gray-200 dark:divide-gray-800 dark:border-gray-800">
             @for (item of order.items; track $index) {
@@ -48,9 +88,9 @@
                   } @else {
                     <p class="line-clamp-2 text-sm">{{ item.title }}</p>
                   }
-                  <p class="mt-1 text-xs text-gray-500">{{ item.unitPrice | currency }} × {{ item.quantity }}</p>
+                  <p class="mt-1 text-xs text-gray-500">{{ item.unitPrice | money: order.currency }} × {{ item.quantity }}</p>
                 </div>
-                <span class="font-semibold">{{ item.lineTotal | currency }}</span>
+                <span class="font-semibold">{{ item.lineTotal | money: order.currency }}</span>
               </li>
             }
           </ul>
@@ -79,16 +119,28 @@
             <dl class="space-y-2 text-sm">
               <div class="flex justify-between">
                 <dt class="text-gray-500">Sous-total</dt>
-                <dd>{{ order.subtotal | currency }}</dd>
+                <dd>{{ order.subtotal | money: order.currency }}</dd>
               </div>
               <div class="flex justify-between">
                 <dt class="text-gray-500">Livraison</dt>
-                <dd>{{ order.shippingCost ? (order.shippingCost | currency) : 'Offerte' }}</dd>
+                <dd>{{ order.shippingCost ? (order.shippingCost | money: order.currency) : 'Offerte' }}</dd>
               </div>
+              @if (order.paymentFee) {
+                <div class="flex justify-between">
+                  <dt class="text-gray-500">Paiement à la livraison</dt>
+                  <dd>{{ order.paymentFee | money: order.currency }}</dd>
+                </div>
+              }
               <div class="flex justify-between border-t border-gray-200 pt-2 font-bold dark:border-gray-800">
-                <dt>Total</dt>
-                <dd>{{ order.total | currency }}</dd>
+                <dt>Total <span class="text-xs font-normal text-gray-500">TTC</span></dt>
+                <dd>{{ order.total | money: order.currency }}</dd>
               </div>
+              @if (order.taxAmount) {
+                <div class="flex justify-between text-xs text-gray-500">
+                  <dt>dont TVA</dt>
+                  <dd>{{ order.taxAmount | money: order.currency }}</dd>
+                </div>
+              }
             </dl>
           </div>
 
@@ -100,7 +152,7 @@
               @if (order.shippingAddress.line2) {
                 {{ order.shippingAddress.line2 }}<br />
               }
-              {{ order.shippingAddress.postalCode }} {{ order.shippingAddress.city }}<br />
+              {{ formatLocality(order.shippingAddress) }}<br />
               {{ order.shippingAddress.country }}
               @if (order.shippingAddress.phone) {
                 <br />{{ order.shippingAddress.phone }}

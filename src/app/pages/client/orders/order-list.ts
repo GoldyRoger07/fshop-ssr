@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { OrderService } from '../../../services/order.service';
 import { Order, ORDER_STATUS_LABELS } from '../../../models/order.model';
@@ -7,11 +7,12 @@ import { Page } from '../../../models/page.model';
 import { Container } from '../../../components/container/container';
 import { Pagination } from '../../../components/pagination/pagination';
 import { errorMessage } from '../../../shared/api-error';
+import { MoneyPipe } from '../../../shared/money';
 
 /** Historique des commandes du client (/commandes). */
 @Component({
   selector: 'app-order-list-page',
-  imports: [RouterLink, CurrencyPipe, DatePipe, Container, Pagination],
+  imports: [RouterLink, MoneyPipe, DatePipe, Container, Pagination],
   templateUrl: './order-list.html',
 })
 export default class OrderListPage {

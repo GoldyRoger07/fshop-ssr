@@ -5,6 +5,7 @@ import { AdminService, ProductRequest } from '../../../services/admin.service';
 import { Category } from '../../../models/category.model';
 import { ProductTag } from '../../../models/product.model';
 import { errorMessage } from '../../../shared/api-error';
+import { SettingsService } from '../../../services/settings.service';
 
 /** Création (/admin/produits/nouveau) et édition (/admin/produits/:id) d'un produit. */
 @Component({
@@ -14,6 +15,9 @@ import { errorMessage } from '../../../shared/api-error';
 })
 export default class ProductForm {
   private readonly admin = inject(AdminService);
+  /** Devise de la boutique, pour les libellés de prix. */
+  protected readonly currency = computed(() => this.settings().currency);
+  private readonly settings = inject(SettingsService).settings;
   private readonly router = inject(Router);
   private readonly fb = inject(NonNullableFormBuilder);
 

@@ -1,0 +1,404 @@
+<div class="mb-6">
+  <h1 class="text-xl font-bold">Paramètres</h1>
+  <p class="text-sm text-gray-500">
+    Réglages de la boutique, appliqués immédiatement aux paniers et aux nouvelles commandes.
+    @if (updatedAt(); as date) {
+      Dernière modification le {{ date | date: 'd MMMM y à HH:mm' }}.
+    }
+  </p>
+</div>
+
+@if (error(); as message) {
+  <p class="admin-panel mb-4 border-sale/40 p-4 text-sm text-sale">{{ message }}</p>
+}
+
+<ng-template #switchTrack>
+  <span
+    class="relative mt-0.5 h-5 w-9 shrink-0 rounded-full bg-gray-300 transition-colors peer-checked:bg-black peer-focus-visible:ring-2 peer-focus-visible:ring-gray-400 after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-4 dark:bg-gray-700 dark:peer-checked:bg-white dark:peer-checked:after:bg-black"
+  ></span>
+</ng-template>
+
+@if (loading()) {
+  <p class="text-sm text-gray-500">Chargement…</p>
+} @else {
+  <form class="max-w-5xl space-y-6 pb-4" [formGroup]="form" (ngSubmit)="submit()">
+    <!-- Boutique -->
+    <section class="grid gap-4 md:grid-cols-[16rem_1fr]">
+      <div>
+        <h2 class="font-semibold">Boutique</h2>
+        <p class="mt-1 text-sm text-gray-500">
+          Nom, devise des prix, contact affiché en pied de page et message du bandeau d'annonce.
+        </p>
+      </div>
+      <div class="admin-panel grid gap-4 p-5 sm:grid-cols-2">
+        <div>
+          <label class="admin-label" for="storeName">Nom de la boutique *</label>
+          <input id="storeName" class="admin-input" formControlName="storeName" maxlength="100" [class.border-sale]="invalid('storeName')" />
+        </div>
+        <div>
+          <label class="admin-label" for="currency">Devise *</label>
+          <select id="currency" class="admin-input" formControlName="currency">
+            @for (c of currencies; track c.code) {
+              <option [value]="c.code">{{ c.label }}</option>
+            }
+          </select>
+          <p class="mt-1 text-xs text-gray-500">Aperçu : {{ 1500 | money: currencyCode() }}</p>
+        </div>
+        @if (currencyChanged()) {
+          <p class="rounded-lg bg-amber-50 p-3 text-xs text-amber-900 sm:col-span-2 dark:bg-amber-950/30 dark:text-amber-300">
+            <i class="pi pi-exclamation-triangle mr-1"></i>
+            Les montants ne sont pas convertis : après l'enregistrement, mettez à jour les prix des produits, les
+            frais de port, les seuils et le supplément de livraison dans la nouvelle devise. Les commandes déjà
+            passées gardent leur devise d'origine.
+          </p>
+        }
+        <div>
+          <label class="admin-label" for="contactEmail">E-mail du service client</label>
+          <input
+            id="contactEmail"
+            type="email"
+            class="admin-input"
+            formControlName="contactEmail"
+            placeholder="contact@fshop.fr"
+            [class.border-sale]="invalid('contactEmail')"
+          />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="admin-label" for="announcement">Message promotionnel du bandeau</label>
+          <input
+            id="announcement"
+            class="admin-input"
+            formControlName="announcement"
+            maxlength="255"
+            placeholder="-15 % sur votre 1re commande avec FSHOP15"
+          />
+          <p class="mt-1 text-xs text-gray-500">Laisser vide pour ne rien afficher.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Commandes -->
+    <section class="grid gap-4 md:grid-cols-[16rem_1fr]">
+      <div>
+        <h2 class="font-semibold">Commandes</h2>
+        <p class="mt-1 text-sm text-gray-500">Ouverture des commandes, montant minimum et limites par article.</p>
+      </div>
+      <div class="admin-panel grid gap-4 p-5 sm:grid-cols-2">
+        <label class="flex cursor-pointer items-start gap-3 sm:col-span-2">
+          <input type="checkbox" class="peer sr-only" formControlName="checkoutEnabled" />
+          <ng-container [ngTemplateOutlet]="switchTrack" />
+          <span class="text-sm">
+            <span class="font-medium">Accepter les commandes</span>
+            <span class="block text-xs text-gray-500">
+              Désactivé : la boutique reste consultable mais le passage en caisse est bloqué (vacances, inventaire…).
+            </span>
+          </span>
+        </label>
+
+        @if (!checkoutEnabled()) {
+          <div class="sm:col-span-2">
+            <label class="admin-label" for="closedMessage">Message affiché aux clients</label>
+            <input
+              id="closedMessage"
+              class="admin-input"
+              formControlName="closedMessage"
+              maxlength="255"
+              placeholder="Boutique fermée jusqu'au 2 septembre, merci de votre patience !"
+            />
+          </div>
+        }
+
+        <div>
+          <label class="admin-label" for="minOrderAmount">Montant minimum de commande ({{ currencyCode() }}) *</label>
+          <input
+            id="minOrderAmount"
+            type="number"
+            min="0"
+            step="0.01"
+            class="admin-input"
+            formControlName="minOrderAmount"
+            [class.border-sale]="invalid('minOrderAmount')"
+          />
+          <p class="mt-1 text-xs text-gray-500">0 = aucun minimum. Hors frais de port.</p>
+        </div>
+        <div>
+          <label class="admin-label" for="maxQuantityPerItem">Quantité maximale par article *</label>
+          <input
+            id="maxQuantityPerItem"
+            type="number"
+            min="1"
+            max="99"
+            step="1"
+            class="admin-input"
+            formControlName="maxQuantityPerItem"
+            [class.border-sale]="invalid('maxQuantityPerItem')"
+          />
+          <p class="mt-1 text-xs text-gray-500">Entre 1 et 99, dans la limite du stock.</p>
+        </div>
+
+        <label class="flex cursor-pointer items-start gap-3 sm:col-span-2">
+          <input type="checkbox" class="peer sr-only" formControlName="customerCancellation" />
+          <ng-container [ngTemplateOutlet]="switchTrack" />
+          <span class="text-sm">
+            <span class="font-medium">Annulation par le client</span>
+            <span class="block text-xs text-gray-500">
+              Le client peut annuler lui-même une commande tant qu'elle est « En attente ».
+            </span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Paiement -->
+    <section class="grid gap-4 md:grid-cols-[16rem_1fr]">
+      <div>
+        <h2 class="font-semibold">Paiement</h2>
+        <p class="mt-1 text-sm text-gray-500">
+          MonCash, NatCash et paiement à la livraison. Pour MonCash et NatCash, le client envoie l'argent à votre
+          numéro puis saisit l'ID de transaction reçu par SMS : vous le vérifiez dans Commandes → « Paiements à
+          vérifier ».
+        </p>
+      </div>
+      <div class="admin-panel divide-y divide-gray-100 dark:divide-gray-800">
+        @for (wallet of wallets; track wallet.key) {
+          <div class="grid gap-4 p-5 sm:grid-cols-2">
+            <label class="flex cursor-pointer items-start gap-3 sm:col-span-2">
+              <input type="checkbox" class="peer sr-only" [formControlName]="wallet.enabled" />
+              <ng-container [ngTemplateOutlet]="switchTrack" />
+              <span class="text-sm">
+                <span class="font-medium">{{ wallet.label }}</span>
+                <span class="block text-xs text-gray-500">
+                  Paiement depuis le téléphone du client, reçu instantanément sur votre compte {{ wallet.label }}.
+                </span>
+              </span>
+            </label>
+            @if (walletEnabled(wallet.key)) {
+              <div>
+                <label class="admin-label" [for]="wallet.number">Numéro {{ wallet.label }} *</label>
+                <input
+                  [id]="wallet.number"
+                  type="tel"
+                  class="admin-input"
+                  [formControlName]="wallet.number"
+                  maxlength="30"
+                  placeholder="3712 3456"
+                  [class.border-sale]="invalid(wallet.number)"
+                />
+                <p class="mt-1 text-xs text-gray-500">8 chiffres, +509 facultatif. Affiché au client.</p>
+              </div>
+              <div>
+                <label class="admin-label" [for]="wallet.accountName">Nom du compte *</label>
+                <input
+                  [id]="wallet.accountName"
+                  class="admin-input"
+                  [formControlName]="wallet.accountName"
+                  maxlength="100"
+                  placeholder="Fshop"
+                />
+                <p class="mt-1 text-xs text-gray-500">
+                  Tel qu'affiché par {{ wallet.label }} avant confirmation : le client vérifie qu'il paie bien la
+                  boutique.
+                </p>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Paiement à la livraison -->
+        <div class="grid gap-4 p-5 sm:grid-cols-2">
+          <label class="flex cursor-pointer items-start gap-3 sm:col-span-2">
+            <input type="checkbox" class="peer sr-only" formControlName="cashOnDeliveryEnabled" />
+            <ng-container [ngTemplateOutlet]="switchTrack" />
+            <span class="text-sm">
+              <span class="font-medium">Paiement à la livraison</span>
+              <span class="block text-xs text-gray-500">
+                Espèces remises au livreur : la commande peut être expédiée avant paiement et passe à « Payée » quand
+                vous la marquez « Livrée ».
+              </span>
+            </span>
+          </label>
+          @if (cashOnDeliveryEnabled()) {
+            <div>
+              <label class="admin-label" for="cashOnDeliveryFee">Supplément ({{ currencyCode() }}) *</label>
+              <input
+                id="cashOnDeliveryFee"
+                type="number"
+                min="0"
+                step="0.01"
+                class="admin-input"
+                formControlName="cashOnDeliveryFee"
+                [class.border-sale]="invalid('cashOnDeliveryFee')"
+              />
+              <p class="mt-1 text-xs text-gray-500">0 = aucun supplément.</p>
+            </div>
+          }
+        </div>
+
+        <!-- Délai -->
+        <div class="grid gap-4 p-5 sm:grid-cols-2">
+          <div>
+            <label class="admin-label" for="paymentDelayDays">Délai de paiement MonCash / NatCash (jours) *</label>
+            <input
+              id="paymentDelayDays"
+              type="number"
+              min="0"
+              max="60"
+              step="1"
+              class="admin-input"
+              formControlName="paymentDelayDays"
+              [class.border-sale]="invalid('paymentDelayDays')"
+            />
+          </div>
+          <p class="self-center rounded-lg bg-gray-50 p-3 text-xs text-gray-600 dark:bg-gray-950 dark:text-gray-400">
+            Passé ce délai, une commande MonCash / NatCash dont le client n'a pas envoyé l'ID de transaction est
+            annulée et son stock remis en vente. 0 = jamais.
+          </p>
+        </div>
+
+        @if (noPaymentMethod()) {
+          <p class="p-5 text-sm text-sale">
+            <i class="pi pi-exclamation-triangle mr-1"></i>
+            Aucun moyen de paiement actif : les clients ne pourront pas commander.
+          </p>
+        }
+      </div>
+    </section>
+
+    <!-- Livraison -->
+    <section class="grid gap-4 md:grid-cols-[16rem_1fr]">
+      <div>
+        <h2 class="font-semibold">Livraison</h2>
+        <p class="mt-1 text-sm text-gray-500">Frais de port forfaitaires et seuil de livraison offerte.</p>
+      </div>
+      <div class="admin-panel grid gap-4 p-5 sm:grid-cols-2">
+        <div>
+          <label class="admin-label" for="shippingCost">Frais de port ({{ currencyCode() }} TTC) *</label>
+          <input
+            id="shippingCost"
+            type="number"
+            min="0"
+            step="0.01"
+            class="admin-input"
+            formControlName="shippingCost"
+            [class.border-sale]="invalid('shippingCost')"
+          />
+          <p class="mt-1 text-xs text-gray-500">0 = livraison toujours offerte.</p>
+        </div>
+
+        <div class="hidden sm:block"></div>
+
+        <label class="flex cursor-pointer items-start gap-3 sm:col-span-2">
+          <input type="checkbox" class="peer sr-only" formControlName="freeShippingEnabled" />
+          <ng-container [ngTemplateOutlet]="switchTrack" />
+          <span class="text-sm">
+            <span class="font-medium">Livraison offerte à partir d'un montant</span>
+            <span class="block text-xs text-gray-500">Affiché dans le bandeau, sur les fiches produit et dans le panier.</span>
+          </span>
+        </label>
+
+        @if (freeShippingEnabled()) {
+          <div>
+            <label class="admin-label" for="freeShippingThreshold">Livraison offerte dès ({{ currencyCode() }}) *</label>
+            <input
+              id="freeShippingThreshold"
+              type="number"
+              min="0"
+              step="0.01"
+              class="admin-input"
+              formControlName="freeShippingThreshold"
+              [class.border-sale]="invalid('freeShippingThreshold')"
+            />
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Taxes -->
+    <section class="grid gap-4 md:grid-cols-[16rem_1fr]">
+      <div>
+        <h2 class="font-semibold">Taxes</h2>
+        <p class="mt-1 text-sm text-gray-500">
+          Les prix du catalogue s'entendent TTC. La TVA incluse est détaillée au panier et figée sur chaque commande.
+        </p>
+      </div>
+      <div class="admin-panel grid gap-4 p-5 sm:grid-cols-2">
+        <div>
+          <label class="admin-label" for="vatRate">Taux de TVA (%) *</label>
+          <input
+            id="vatRate"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            class="admin-input"
+            formControlName="vatRate"
+            [class.border-sale]="invalid('vatRate')"
+          />
+          <p class="mt-1 text-xs text-gray-500">Taux normal en France : 20 %.</p>
+        </div>
+        <p class="self-center rounded-lg bg-gray-50 p-3 text-xs text-gray-600 dark:bg-gray-950 dark:text-gray-400">
+          Exemple : pour {{ 100 | money: currencyCode() }} TTC, la TVA incluse est de {{ taxExample() | money: currencyCode() }}.
+        </p>
+      </div>
+    </section>
+
+    <!-- Stock et retours -->
+    <section class="grid gap-4 md:grid-cols-[16rem_1fr]">
+      <div>
+        <h2 class="font-semibold">Stock et retours</h2>
+        <p class="mt-1 text-sm text-gray-500">Alerte de stock faible et politique de retour affichée aux clients.</p>
+      </div>
+      <div class="admin-panel grid gap-4 p-5 sm:grid-cols-2">
+        <div>
+          <label class="admin-label" for="lowStockThreshold">Seuil de stock faible *</label>
+          <input
+            id="lowStockThreshold"
+            type="number"
+            min="0"
+            step="1"
+            class="admin-input"
+            formControlName="lowStockThreshold"
+            [class.border-sale]="invalid('lowStockThreshold')"
+          />
+          <p class="mt-1 text-xs text-gray-500">« Plus que N en stock » sur la fiche produit, alerte dans la liste.</p>
+        </div>
+        <div>
+          <label class="admin-label" for="returnDays">Retours gratuits (jours) *</label>
+          <input
+            id="returnDays"
+            type="number"
+            min="0"
+            max="365"
+            step="1"
+            class="admin-input"
+            formControlName="returnDays"
+            [class.border-sale]="invalid('returnDays')"
+          />
+          <p class="mt-1 text-xs text-gray-500">0 = mention masquée. Droit légal de rétractation : 14 jours minimum.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Barre d'enregistrement -->
+    @if (dirty() || saved()) {
+      <div
+        class="admin-panel sticky bottom-4 flex flex-wrap items-center justify-between gap-3 px-5 py-3 shadow-lg"
+        role="status"
+      >
+        @if (dirty()) {
+          <span class="text-sm font-medium">Modifications non enregistrées</span>
+          <div class="flex gap-2">
+            <button type="button" class="admin-btn-ghost" [disabled]="submitting()" (click)="discard()">Annuler</button>
+            <button type="submit" class="admin-btn" [disabled]="submitting()">
+              {{ submitting() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          </div>
+        } @else {
+          <span class="text-sm text-green-700 dark:text-green-500">
+            <i class="pi pi-check-circle mr-1"></i> Paramètres enregistrés
+          </span>
+        }
+      </div>
+    }
+  </form>
+}

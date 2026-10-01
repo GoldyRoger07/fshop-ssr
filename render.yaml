@@ -1,0 +1,24 @@
+# Blueprint Render : frontend FShop (Angular SSR servi par Express).
+# Doc : https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: fshop-ssr
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: npm ci && npm run build
+    startCommand: npm run serve:ssr:fshop-ssr
+    healthCheckPath: /
+    envVars:
+      # Angular 22 exige Node ^22.22.3, ^24.15.0 ou >=26.
+      - key: NODE_VERSION
+        value: 24.16.0
+      # Domaine(s) public(s) du site, séparés par des virgules. À ajuster si
+      # Render attribue une autre URL (nom déjà pris) ou si vous ajoutez un domaine.
+      - key: NG_ALLOWED_HOSTS
+        value: fshop-ssr.onrender.com
+      # URL de fshop-api, sans le préfixe /api (ex. https://fshop-api.onrender.com).
+      # Demandée lors de la création du blueprint.
+      - key: API_URL
+        sync: false

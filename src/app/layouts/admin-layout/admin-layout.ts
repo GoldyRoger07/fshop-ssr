@@ -29,6 +29,7 @@ export default class AdminLayout {
     { path: '/admin/produits', label: 'Produits', icon: 'pi-tag' },
     { path: '/admin/categories', label: 'Catégories', icon: 'pi-th-large' },
     { path: '/admin/commandes', label: 'Commandes', icon: 'pi-shopping-bag' },
+    { path: '/admin/parametres', label: 'Paramètres', icon: 'pi-cog' },
   ];
 
   protected toggleMenu(): void {

@@ -5,16 +5,14 @@ import { concat, last, Observable } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { CartLine, CartResponse } from '../models/cart.model';
 import { Product } from '../models/product.model';
+import { includedTax } from '../models/settings.model';
 import { API_URL } from './api';
+import { SettingsService } from './settings.service';
 
 export type { CartLine } from '../models/cart.model';
 
 /** Panier visiteur conservé d'une visite à l'autre. */
 const STORAGE_KEY = 'fshop.cart';
-
-/** Frais de port : doivent rester alignés sur « fshop.shipping » côté API. */
-export const SHIPPING_COST = 3.99;
-export const FREE_SHIPPING_THRESHOLD = 29;
 
 interface CartSummary {
   subtotal: number;
@@ -30,6 +28,7 @@ interface CartSummary {
 export class CartService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
+  private readonly settings = inject(SettingsService).settings;
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   private readonly lines = signal<CartLine[]>([]);
@@ -55,14 +54,25 @@ export class CartService {
     if (fromServer !== undefined) {
       return fromServer;
     }
+    // Visiteur : même règle que l'API (ShippingCalculator).
+    const { shippingCost, freeShippingEnabled, freeShippingThreshold } = this.settings();
     const subtotal = this.subtotal();
-    return subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+    return subtotal === 0 || (freeShippingEnabled && subtotal >= freeShippingThreshold) ? 0 : shippingCost;
   });
 
   readonly total = computed(() => this.serverSummary()?.total ?? this.subtotal() + this.shippingCost());
 
-  /** Montant restant avant la livraison offerte (0 si déjà atteint). */
-  readonly missingForFreeShipping = computed(() => Math.max(0, FREE_SHIPPING_THRESHOLD - this.subtotal()));
+  /** TVA comprise dans le total (les prix s'entendent TTC). */
+  readonly taxAmount = computed(() => includedTax(this.total(), this.settings().vatRate));
+
+  /** Montant restant avant la livraison offerte (0 si déjà atteint ou sans livraison offerte). */
+  readonly missingForFreeShipping = computed(() => {
+    const { freeShippingEnabled, freeShippingThreshold } = this.settings();
+    return freeShippingEnabled ? Math.max(0, freeShippingThreshold - this.subtotal()) : 0;
+  });
+
+  /** Montant restant avant le minimum de commande (0 si atteint). */
+  readonly missingForMinimum = computed(() => Math.max(0, this.settings().minOrderAmount - this.subtotal()));
 
   constructor() {
     // Panier visiteur de la visite précédente. S'il y a une session, l'effet
